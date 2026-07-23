@@ -1,0 +1,14 @@
+{
+  "name": "voting-system",
+  "version": "1.0.0",
+  "description": "在线投票与结果可视化系统",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "sql.js": "^1.10.0",
+    "uuid": "^10.0.0"
+  }
+}

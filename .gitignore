@@ -1,0 +1,6 @@
+node_modules/
+votes.db
+server.log
+cloudflared
+deploy.sh
+.DS_Store

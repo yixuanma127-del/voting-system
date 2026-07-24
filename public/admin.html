@@ -225,108 +225,166 @@
     .sf4 { background: linear-gradient(90deg, var(--red-dark), var(--red)); }
     .sf5 { background: linear-gradient(90deg, #B01E30, var(--red-dark)); }
 
-    /* ═══ Awards Big Screen ═══ */
-    .award-stage {
-      background: linear-gradient(180deg, #3A0008 0%, #5C0010 30%, #8B0018 60%, #3A0008 100%);
-      color: #fff; min-height: 80vh; padding: 40px 20px 60px;
-      border-radius: var(--radius); text-align: center;
-      position: relative; overflow: hidden;
+    /* ═══ Awards - Fullscreen Big Screen ═══ */
+    body.awards-active .header,
+    body.awards-active .tabs,
+    body.awards-active .container { display: none; }
+    body.awards-active { background: #6B0000 !important; overflow: hidden; }
+
+    .awards-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background-color: #8B0000;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(255,200,100,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(255,60,40,0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(255,60,40,0.10) 0%, transparent 50%),
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,0,0,0.04) 40px, rgba(0,0,0,0.04) 42px),
+        repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(0,0,0,0.03) 60px, rgba(0,0,0,0.03) 62px),
+        linear-gradient(180deg, #6B0000 0%, #9B0E24 25%, #C41230 50%, #9B0E24 75%, #5C0000 100%);
+      color: #fff; text-align: center; position: relative; overflow: hidden;
     }
-    .award-stage::before {
-      content: ''; position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
-      width: 600px; height: 300px; border-radius: 50%;
-      background: radial-gradient(ellipse, rgba(196,162,78,0.25) 0%, transparent 70%);
+    .awards-overlay::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.06) 0%, transparent 60%);
       pointer-events: none; z-index: 0;
     }
-    .award-stage::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
-      background: linear-gradient(180deg, transparent, rgba(196,18,48,0.15));
+    .awards-overlay::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.35) 0%, transparent 100%);
       pointer-events: none; z-index: 0;
     }
+
     .award-title {
-      font-size: 38px; font-weight: 900; letter-spacing: 8px; position: relative; z-index: 1;
-      background: linear-gradient(180deg, #F0D878, #C4A24E);
+      font-size: 42px; font-weight: 900; letter-spacing: 10px; position: relative; z-index: 1;
+      background: linear-gradient(180deg, #FFE08A, #C4A24E);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; margin-bottom: 6px; text-shadow: 0 2px 20px rgba(196,162,78,0.3);
+      background-clip: text; margin-bottom: 8px;
+      filter: drop-shadow(0 2px 12px rgba(196,162,78,0.5));
     }
     .award-divider {
-      width: 180px; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 12px auto 16px; position: relative; z-index: 1;
+      width: 240px; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold), transparent);
+      margin: 10px auto 14px; position: relative; z-index: 1;
     }
-    .award-subtitle { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 36px; position: relative; z-index: 1; letter-spacing: 1px; }
+    .award-subtitle {
+      font-size: 16px; color: rgba(255,255,255,0.55);
+      margin-bottom: 28px; position: relative; z-index: 1; letter-spacing: 2px;
+    }
     .award-start-btn {
-      margin: 20px auto 30px; padding: 18px 52px; font-size: 20px;
-      background: linear-gradient(135deg, var(--gold), #B8933C);
-      border: none; border-radius: 50px; color: #fff;
-      font-weight: 700; cursor: pointer; letter-spacing: 4px;
-      box-shadow: 0 8px 30px rgba(196,162,78,0.4);
-      transition: all 0.3s; font-family: inherit; position: relative; z-index: 1;
+      padding: 18px 56px; font-size: 22px; font-weight: 700;
+      background: linear-gradient(135deg, #D4A84B, #E8C44A);
+      border: 2px solid rgba(255,255,255,0.2); border-radius: 50px;
+      color: #3A0008; cursor: pointer; letter-spacing: 6px;
+      box-shadow: 0 8px 36px rgba(196,162,78,0.5);
+      transition: all 0.3s; font-family: inherit; position: relative; z-index: 2;
+      margin-bottom: 24px;
     }
-    .award-start-btn:hover { transform: scale(1.05); box-shadow: 0 12px 40px rgba(196,162,78,0.55); }
+    .award-start-btn:hover { transform: scale(1.06); box-shadow: 0 14px 50px rgba(196,162,78,0.7); }
 
     .award-five-grid {
       display: flex; justify-content: center; align-items: flex-end;
-      gap: 14px; position: relative; z-index: 1; flex-wrap: nowrap;
-      max-width: 1100px; margin: 0 auto; padding: 0 10px;
+      gap: 20px; position: relative; z-index: 1; flex-wrap: nowrap;
+      width: 94vw; max-width: 1300px; margin: 0 auto; padding: 0 8px;
     }
     .award-col {
       flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center;
     }
     .award-col-label {
-      font-size: 18px; font-weight: 700; color: var(--gold); margin-bottom: 10px;
-      letter-spacing: 2px; text-shadow: 0 0 12px rgba(196,162,78,0.4);
+      font-size: 22px; font-weight: 800; color: var(--gold); margin-bottom: 12px;
+      letter-spacing: 4px; text-shadow: 0 0 16px rgba(196,162,78,0.5);
+      position: relative; z-index: 1;
     }
-    .award-col-crown { font-size: 20px; margin-bottom: 6px; opacity: 0.9; }
+    .award-col-crown {
+      font-size: 28px; margin-bottom: 8px; opacity: 0.95; position: relative; z-index: 1;
+    }
     .award-col-frame {
-      width: 100%; aspect-ratio: 3/4; max-height: 320px;
-      border: 2px solid var(--gold); border-radius: 6px;
-      background: rgba(0,0,0,0.2); position: relative;
+      width: 100%; aspect-ratio: 3/4; max-height: 460px;
+      border: 3px solid var(--gold); border-radius: 8px;
+      background: rgba(0,0,0,0.35); position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       overflow: hidden; transition: all 0.4s;
-      box-shadow: 0 0 20px rgba(196,162,78,0.15), inset 0 0 30px rgba(0,0,0,0.2);
+      box-shadow: 0 0 30px rgba(196,162,78,0.2), inset 0 0 40px rgba(0,0,0,0.3);
     }
     .award-col-frame::before {
-      content: ''; position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
-      border: 1px solid rgba(196,162,78,0.3); border-radius: 3px; pointer-events: none;
+      content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+      border: 1px solid rgba(196,162,78,0.35); border-radius: 4px; pointer-events: none; z-index: 1;
     }
     .award-col-frame.revealed {
-      background: rgba(196,18,48,0.15);
-      box-shadow: 0 0 30px rgba(196,162,78,0.25), inset 0 0 30px rgba(0,0,0,0.1);
+      background: rgba(196,18,48,0.2);
+      box-shadow: 0 0 40px rgba(196,162,78,0.35), inset 0 0 30px rgba(0,0,0,0.1);
       animation: frameGlow 1s ease-out;
     }
-    @keyframes frameGlow { 0%{box-shadow:0 0 60px rgba(196,162,78,0.6);} 100%{box-shadow:0 0 30px rgba(196,162,78,0.25);} }
-    .award-col-frame .placeholder { font-size: 48px; opacity: 0.15; }
-    .award-col-frame .aw-img { width: 100%; height: 65%; object-fit: cover; }
-    .award-col-frame .aw-info { padding: 10px 8px; text-align: center; width: 100%; }
-    .award-col-frame .aw-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-    .award-col-frame .aw-votes { font-size: 13px; color: var(--gold); margin-top: 4px; font-weight: 600; }
-    .award-col-frame .aw-rank-num {
-      position: absolute; top: 8px; left: 8px; width: 28px; height: 28px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--gold), #B8933C); color: #3A0008;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 900; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    @keyframes frameGlow { 0%{box-shadow:0 0 80px rgba(196,162,78,0.8);} 100%{box-shadow:0 0 40px rgba(196,162,78,0.35);} }
+
+    .award-col-frame .placeholder {
+      font-size: 64px; opacity: 0.12; font-weight: 900;
     }
-    .award-reveal-anim { animation: revealPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275); }
-    @keyframes revealPop { 0%{opacity:0;transform:scale(0.8) translateY(20px);} 100%{opacity:1;transform:scale(1) translateY(0);} }
+
+    /* 照片区域 */
+    .award-col-frame .aw-photo-area {
+      width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .award-col-frame .aw-img {
+      width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
+    }
+    /* 未揭晓时的作品照片占位 */
+    .award-col-frame .aw-photo-placeholder {
+      width: 80%; height: 55%; border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: rgba(255,255,255,0.2); letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .award-col-frame .aw-info {
+      padding: 10px 8px; text-align: center; width: 100%;
+      background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+      position: absolute; bottom: 0; left: 0; z-index: 1;
+    }
+    .award-col-frame .aw-name {
+      font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #fff; letter-spacing: 1px;
+    }
+    .award-col-frame .aw-votes {
+      font-size: 14px; color: var(--gold); margin-top: 4px; font-weight: 700;
+    }
+    .award-col-frame .aw-rank-num {
+      position: absolute; top: 10px; left: 10px; width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #F0D878, #C4A24E); color: #3A0008;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 900; box-shadow: 0 2px 12px rgba(0,0,0,0.4); z-index: 2;
+    }
+    .award-reveal-anim { animation: revealPop 0.7s cubic-bezier(0.175,0.885,0.32,1.275); }
+    @keyframes revealPop { 0%{opacity:0;transform:scale(0.7) translateY(30px);} 100%{opacity:1;transform:scale(1) translateY(0);} }
 
     .award-next-btn {
-      margin-top: 32px; padding: 14px 44px; font-size: 16px;
+      padding: 14px 48px; font-size: 18px;
       background: linear-gradient(135deg, var(--gold), #B8933C);
-      border: none; border-radius: 50px; color: #3A0008; cursor: pointer;
-      font-weight: 700; letter-spacing: 3px; transition: all 0.3s;
-      font-family: inherit; position: relative; z-index: 1;
-      box-shadow: 0 4px 20px rgba(196,162,78,0.35);
+      border: 2px solid rgba(255,255,255,0.15); border-radius: 50px;
+      color: #3A0008; cursor: pointer;
+      font-weight: 700; letter-spacing: 4px; transition: all 0.3s;
+      font-family: inherit; position: relative; z-index: 2; margin-top: 24px;
+      box-shadow: 0 4px 24px rgba(196,162,78,0.4);
     }
-    .award-next-btn:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(196,162,78,0.5); }
+    .award-next-btn:hover { transform: scale(1.06); box-shadow: 0 8px 36px rgba(196,162,78,0.6); }
     .award-finish-text {
-      margin-top: 28px; font-size: 22px; color: var(--gold); font-weight: 700;
-      letter-spacing: 4px; position: relative; z-index: 1;
-      text-shadow: 0 0 20px rgba(196,162,78,0.5);
+      margin-top: 24px; font-size: 26px; color: var(--gold); font-weight: 800;
+      letter-spacing: 6px; position: relative; z-index: 1;
+      text-shadow: 0 0 24px rgba(196,162,78,0.6);
       animation: finishPulse 2s ease-in-out infinite;
     }
     @keyframes finishPulse { 0%,100%{opacity:0.8;} 50%{opacity:1;} }
     .confetti { position: absolute; pointer-events: none; z-index: 100; }
+
+    /* 退出全屏按钮 */
+    .award-exit-btn {
+      position: fixed; top: 16px; right: 20px; z-index: 10002;
+      padding: 8px 18px; font-size: 13px; font-weight: 600;
+      background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px; color: rgba(255,255,255,0.7);
+      cursor: pointer; letter-spacing: 1px; font-family: inherit;
+      transition: all 0.2s;
+    }
+    .award-exit-btn:hover { background: rgba(0,0,0,0.5); color: #fff; }
 
     /* ═══ Utility ═══ */
     .empty-hint { text-align: center; padding: 40px; color: #C8C0B8; font-size: 14px; }
@@ -342,8 +400,11 @@
       .vote-grid { grid-template-columns: repeat(2,1fr); }
       .simple-bar-label { width: 50px; font-size: 10px; }
       .award-title { font-size: 24px; }
-      .award-card { flex-direction: column; text-align: center; }
-      .award-card .award-name { font-size: 16px; }
+      .award-col-label { font-size: 14px; letter-spacing: 1px; }
+      .award-col-crown { font-size: 18px; }
+      .award-col-frame { max-height: 240px; }
+      .award-col-frame .aw-name { font-size: 12px; }
+      .award-five-grid { gap: 8px; }
     }
   </style>
 </head>
@@ -447,6 +508,7 @@
     });
 
     function switchPage(page) {
+      if (currentPage === 'awards' && page !== 'awards') { exitAwards(); }
       currentPage = page;
       if (page === 'awards') { awardRevealState = 0; awardsData = []; awardsTotalVoters = 0; }
       var tabs = document.querySelectorAll('.tab');
@@ -660,19 +722,33 @@
     var awardsData = [];
     var awardRevealState = 0;
     var awardsTotalVoters = 0;
+    var awardsOverlayEl = null;
+
+    function exitAwards() {
+      if (awardsOverlayEl) {
+        if (awardsOverlayEl.parentNode) awardsOverlayEl.parentNode.removeChild(awardsOverlayEl);
+        awardsOverlayEl = null;
+      }
+      document.body.classList.remove('awards-active');
+      document.body.style.overflow = '';
+      document.body.style.background = '';
+      awardRevealState = 0;
+    }
 
     async function renderAwardsPage() {
-      var c = $('awardsContent'); if (!c) return;
+      exitAwards();
       try {
         var res = await fetch('/api/results');
         var data = await res.json();
         awardsData = data.results.slice(0, 5);
         awardsTotalVoters = data.totalVoters || 0;
-      } catch(e) { c.innerHTML = '<div class="award-stage"><div class="award-title">颁奖环节</div><div class="award-subtitle" style="color:#fff;">加载失败</div></div>'; return; }
+      } catch(e) { return; }
       if (!awardsData.length || awardsData.every(function(r) { return r.vote_count === 0; })) {
-        c.innerHTML = '<div class="award-stage"><div class="award-title">颁奖环节</div><div class="award-subtitle">暂无投票数据</div><div style="color:rgba(255,255,255,0.4);">等待投票结束后揭晓</div></div>';
+        var c2 = $('awardsContent');
+        if (c2) c2.innerHTML = '<div style="padding:60px 20px;text-align:center;"><div style="font-size:32px;color:var(--red);margin-bottom:12px;">颁奖环节</div><div style="color:var(--text-dim);">暂无投票数据，等待投票结束后揭晓</div></div>';
         return;
       }
+
       var colsHtml = '';
       var colLabels = ['第一名', '第二名', '第三名', '第四名', '第五名'];
       for (var i = 0; i < 5; i++) {
@@ -680,20 +756,28 @@
           + '<div class="award-col-label">' + colLabels[i] + '</div>'
           + '<div class="award-col-crown">&#x1F451;</div>'
           + '<div class="award-col-frame" id="awardFrame' + i + '">'
+          + '<div class="aw-photo-placeholder">作品照片</div>'
           + '<div class="placeholder">?</div>'
           + '</div></div>';
       }
-      var html = '<div class="award-stage">'
+
+      var overlay = document.createElement('div');
+      overlay.className = 'awards-overlay';
+      overlay.id = 'awardsOverlay';
+      overlay.innerHTML = ''
+        + '<button class="award-exit-btn" onclick="window.award_exit()">&#x2190; 退出全屏</button>'
         + '<div class="award-title">颁奖典礼</div>'
         + '<div class="award-divider"></div>'
         + '<div class="award-subtitle">共 ' + awardsTotalVoters + ' 人参与投票</div>'
         + '<button class="award-start-btn" id="btnAwardStart" onclick="window.award_doReveal()">开始揭晓</button>'
         + '<div class="award-five-grid" id="awardGrid">' + colsHtml + '</div>'
         + '<button class="award-next-btn" id="btnAwardNext" style="display:none" onclick="window.award_doReveal()">揭晓下一名</button>'
-        + '<div id="awardFinish" style="display:none" class="award-finish-text">恭喜所有获奖作品</div>'
-        + '</div>';
-      c.innerHTML = html;
+        + '<div id="awardFinish" style="display:none" class="award-finish-text">&#x1F389; 恭喜所有获奖作品 &#x1F389;</div>';
+      document.body.appendChild(overlay);
+      document.body.classList.add('awards-active');
+      awardsOverlayEl = overlay;
       window.award_doReveal = function() { doRevealNext(); };
+      window.award_exit = function() { exitAwards(); };
     }
 
     var rankNames = ['', '第一名', '第二名', '第三名', '第四名', '第五名'];
@@ -710,6 +794,8 @@
         var content = '';
         if (work.image_data) {
           content += '<img class="aw-img" src="' + work.image_data + '">';
+        } else {
+          content += '<div class="aw-photo-placeholder">作品照片</div>';
         }
         content += '<div class="aw-info">'
           + '<div class="aw-name">' + work.title + '</div>'
@@ -718,6 +804,7 @@
           + '<div class="aw-rank-num">' + (idx + 1) + '</div>';
         frame.innerHTML = content;
         frame.classList.add('award-reveal-anim');
+        setTimeout(function() { frame.classList.remove('award-reveal-anim'); }, 700);
       }
       var startBtn = document.getElementById('btnAwardStart');
       var nextBtn = document.getElementById('btnAwardNext');
@@ -729,22 +816,24 @@
           nextBtn.textContent = '揭晓' + rankNames[5 - awardRevealState];
         } else { nextBtn.style.display = 'none'; }
       }
+      // 每次揭晓都撒彩带
+      setTimeout(launchConfetti, 200);
       if (finishDiv && awardRevealState >= 5) {
         finishDiv.style.display = '';
-        setTimeout(launchConfetti, 300);
+        setTimeout(launchConfetti, 600);
       }
     }
 
     function launchConfetti() {
-      var stage = document.querySelector('.award-stage');
+      var stage = document.getElementById('awardsOverlay');
       if (!stage) return;
       var colors = ['#E8C44A','#C4A24E','#C41230','#FFD700','#CD7F32','#FF6348','#FFC312'];
-      for (var i = 0; i < 60; i++) {
+      for (var i = 0; i < 80; i++) {
         var dot = document.createElement('div');
         dot.className = 'confetti';
         dot.style.cssText = 'left:' + (Math.random() * 100) + '%;top:-10px;'
-          + 'width:' + (4 + Math.random() * 8) + 'px;'
-          + 'height:' + (4 + Math.random() * 8) + 'px;'
+          + 'width:' + (5 + Math.random() * 10) + 'px;'
+          + 'height:' + (5 + Math.random() * 10) + 'px;'
           + 'background:' + colors[Math.floor(Math.random() * colors.length)] + ';'
           + 'border-radius:' + (Math.random() > 0.5 ? '50%' : '2px') + ';'
           + 'animation: confettiFall ' + (2 + Math.random() * 3) + 's ease-out ' + (Math.random() * 0.5) + 's forwards;';

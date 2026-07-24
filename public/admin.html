@@ -152,10 +152,11 @@
     .vote-card .v-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .vote-card .v-img-wrap .no-img { color: #D8D2C8; font-size: 32px; }
     .vote-card .check-mark {
-      position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%;
+      position: absolute; top: 10px; right: 10px; min-width: 28px; height: 28px; border-radius: 14px;
       background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; opacity: 0; transform: scale(0);
+      padding: 0 7px; font-size: 13px; font-weight: 700; opacity: 0; transform: scale(0);
       transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+      white-space: nowrap;
     }
     .vote-card.selected .check-mark { opacity: 1; transform: scale(1); }
     .vote-card .vinfo { padding: 12px; }
@@ -430,7 +431,7 @@
           <div class="entry-icon">🗳️</div>
           <div class="vote-entry-info">
             <h3>将下方链接分享给观众</h3>
-            <p>每人限投 <strong>1</strong> 次，最多选 <strong>5</strong> 个作品</p>
+            <p>每人限投 <strong>1</strong> 次，需选 <strong>5</strong> 个作品并按排名计分（第1名5分~第5名1分）</p>
             <div class="url-box"><a id="voteUrlLink" href="/" target="_blank"></a></div>
             <button class="btn btn-outline" id="btnCopyUrl">复制链接</button>
           </div>
@@ -477,7 +478,7 @@
 
     var VOTE_LIMIT = 5;
     var allWorks = [];
-    var selectedIds = new Set();
+    var selectedOrder = [];  // 有序数组：第0个=第1名(5分)，第4个=第5名(1分)
     var voterToken = '';
     var currentPage = 'manage';
 
@@ -629,15 +630,15 @@
         allWorks = await res.json();
       } catch(e) { c.innerHTML = '<div class="card"><div class="empty-hint">加载失败</div></div>'; return; }
       if (!allWorks.length) { c.innerHTML = '<div class="card"><div class="empty-hint">暂时没有作品</div></div>'; return; }
-      selectedIds = new Set();
+      selectedOrder = [];
       renderVoteCards(c);
     }
 
     function renderVoteCards(container) {
-      var html = '<div class="vote-top"><h2>请为您喜爱的作品投票</h2><div class="vote-rule">最多选择 <strong>' + VOTE_LIMIT + '</strong> 个作品</div></div>';
+      var html = '<div class="vote-top"><h2>请按排名顺序选择作品</h2><div class="vote-rule">第1名 <strong>5分</strong>&ensp;第2名 <strong>4分</strong>&ensp;第3名 <strong>3分</strong>&ensp;第4名 <strong>2分</strong>&ensp;第5名 <strong>1分</strong></div></div>';
       html += '<div class="vote-bar" id="voteBar">';
-      html += '<div style="display:flex;align-items:center;"><div class="vote-count" id="voteCount">0</div><span class="vote-label">已选择 / 最多' + VOTE_LIMIT + '个</span></div>';
-      html += '<button class="btn-vote-submit" id="btnVoteSubmit" disabled>提交投票</button></div>';
+      html += '<div style="display:flex;align-items:center;"><div class="vote-count" id="voteCount">0</div><span class="vote-label">已选择 / 需选' + VOTE_LIMIT + '个（点击次序 = 排名）</span></div>';
+      html += '<button class="btn-vote-submit" id="btnVoteSubmit" disabled>请选择' + VOTE_LIMIT + '个作品</button></div>';
       html += '<div class="vote-grid" id="voteGrid"></div>';
       container.innerHTML = html;
       var grid = $('voteGrid'); if (!grid) return;
@@ -646,7 +647,7 @@
         var w = allWorks[i];
         gridHtml += '<div class="vote-card" data-vid="' + w.id + '">'
           + '<div class="v-img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '">' : '<span class="no-img">&#x1F5BC;</span>') + '</div>'
-          + '<div class="check-mark">&#x2713;</div><div class="vinfo"><div class="vtitle">' + w.title + '</div></div></div>';
+          + '<div class="check-mark"></div><div class="vinfo"><div class="vtitle">' + w.title + '</div></div></div>';
       }
       grid.innerHTML = gridHtml;
       var cards = grid.querySelectorAll('.vote-card');
@@ -659,27 +660,32 @@
     }
 
     function toggleVote(id) {
-      if (selectedIds.has(id)) { selectedIds.delete(id); }
-      else if (selectedIds.size >= VOTE_LIMIT) { return; }
-      else { selectedIds.add(id); }
+      var idx = selectedOrder.indexOf(id);
+      if (idx >= 0) { selectedOrder.splice(idx, 1); }
+      else if (selectedOrder.length >= VOTE_LIMIT) { return; }
+      else { selectedOrder.push(id); }
       updateVoteUI();
     }
     function updateVoteUI() {
       var cards = document.querySelectorAll('.vote-card');
       for (var i = 0; i < cards.length; i++) {
         var id = parseInt(cards[i].dataset.vid);
-        cards[i].classList.toggle('selected', selectedIds.has(id));
-        cards[i].classList.toggle('disabled', !selectedIds.has(id) && selectedIds.size >= VOTE_LIMIT);
+        var rankIdx = selectedOrder.indexOf(id);
+        var isSel = rankIdx >= 0;
+        cards[i].classList.toggle('selected', isSel);
+        cards[i].classList.toggle('disabled', !isSel && selectedOrder.length >= VOTE_LIMIT);
+        var mark = cards[i].querySelector('.check-mark');
+        if (mark) { mark.textContent = isSel ? (rankIdx + 1) : ''; }
       }
-      var cnt = $('voteCount'); if (cnt) { cnt.textContent = selectedIds.size; cnt.classList.toggle('full', selectedIds.size >= VOTE_LIMIT); }
+      var cnt = $('voteCount'); if (cnt) { cnt.textContent = selectedOrder.length; cnt.classList.toggle('full', selectedOrder.length >= VOTE_LIMIT); }
       var btn = $('btnVoteSubmit');
-      if (btn) { btn.disabled = selectedIds.size === 0; btn.textContent = selectedIds.size === 0 ? '请选择作品' : '提交（' + selectedIds.size + '）'; }
+      if (btn) { btn.disabled = selectedOrder.length !== VOTE_LIMIT; btn.textContent = selectedOrder.length === VOTE_LIMIT ? '提交投票' : ('已选 ' + selectedOrder.length + '/' + VOTE_LIMIT); }
     }
     async function submitVote() {
-      if (selectedIds.size === 0) return;
+      if (selectedOrder.length !== VOTE_LIMIT) return;
       var btn = $('btnVoteSubmit'); if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
       try {
-        var res = await fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ work_ids: Array.from(selectedIds), voter_token: voterToken }) });
+        var res = await fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ work_ids: selectedOrder, voter_token: voterToken }) });
         var data = await res.json();
         if (data.error) { alert(data.error); if (btn) { btn.disabled = false; btn.textContent = '提交投票'; } return; }
         var c = $('voteContent');
@@ -692,29 +698,29 @@
       try {
         var res = await fetch('/api/results'); var data = await res.json();
         var top5 = data.results.slice(0, 5);
-        if (!top5.length || top5.every(function(r) { return r.vote_count === 0; })) {
+        if (!top5.length || top5.every(function(r) { return r.score === 0; })) {
           c.innerHTML = '<div class="card"><div class="empty-hint" style="font-size:16px;">等待投票中...</div></div>'; return;
         }
-        var maxVotes = Math.max.apply(null, top5.map(function(r) { return r.vote_count; }));
+        var maxVotes = Math.max.apply(null, top5.map(function(r) { return r.score; }));
         if (maxVotes === 0) maxVotes = 1;
         var order = [1,0,2,3,4]; var medals = ['&#x1F948;','&#x1F947;','&#x1F949;','4','5']; var barClass = ['bar-silver','bar-gold','bar-bronze','bar-other','bar-other'];
         var podiumHtml = '';
         for (var p = 0; p < order.length; p++) {
           var r = top5[order[p]];
-          if (r) podiumHtml += '<div class="podium-item"><div class="medal">' + medals[p] + '</div><div class="name">' + r.title + '</div><div class="votes">' + r.vote_count + ' 票</div><div class="' + barClass[p] + '">' + (order[p]+1) + '</div></div>';
+          if (r) podiumHtml += '<div class="podium-item"><div class="medal">' + medals[p] + '</div><div class="name">' + r.title + '</div><div class="votes">' + r.score + ' 分</div><div class="' + barClass[p] + '">' + (order[p]+1) + '</div></div>';
         }
         var barColors = ['sf1','sf2','sf3','sf4','sf5']; var chartHtml = '';
         for (var b = 0; b < top5.length; b++) {
-          var w = (top5[b].vote_count / maxVotes * 100).toFixed(0);
-          chartHtml += '<div class="simple-bar-row"><div class="simple-bar-label">' + top5[b].title + '</div><div class="simple-bar-track"><div class="simple-bar-fill ' + barColors[b] + '" style="width:' + (top5[b].vote_count > 0 ? w : 0) + '%">' + top5[b].vote_count + ' 票</div></div></div>';
+          var w = (top5[b].score / maxVotes * 100).toFixed(0);
+          chartHtml += '<div class="simple-bar-row"><div class="simple-bar-label">' + top5[b].title + '</div><div class="simple-bar-track"><div class="simple-bar-fill ' + barColors[b] + '" style="width:' + (top5[b].score > 0 ? w : 0) + '%">' + top5[b].score + ' 分</div></div></div>';
         }
         var rankNums = ['&#x1F947;','&#x1F948;','&#x1F949;','4','5']; var rankHtml = '';
         for (var k = 0; k < top5.length; k++) {
-          var rw = (top5[k].vote_count / maxVotes * 100).toFixed(0);
-          rankHtml += '<div class="rank-item"><div class="rank-num rn' + (k+1) + '">' + rankNums[k] + '</div><div class="rank-name">' + top5[k].title + '</div><div class="rank-bar-wrap"><div class="rank-bar rb' + (k+1) + '" style="width:' + (top5[k].vote_count > 0 ? rw : 0) + '%"></div></div><div class="rank-votes">' + top5[k].vote_count + ' 票</div></div>';
+          var rw = (top5[k].score / maxVotes * 100).toFixed(0);
+          rankHtml += '<div class="rank-item"><div class="rank-num rn' + (k+1) + '">' + rankNums[k] + '</div><div class="rank-name">' + top5[k].title + '</div><div class="rank-bar-wrap"><div class="rank-bar rb' + (k+1) + '" style="width:' + (top5[k].score > 0 ? rw : 0) + '%"></div></div><div class="rank-votes">' + top5[k].score + ' 分</div></div>';
         }
         c.innerHTML = '<div class="card" style="text-align:center;"><h2 style="justify-content:center;">获奖作品 TOP5</h2><p style="color:var(--text-dim);font-size:13px;">共 ' + data.totalVoters + ' 人参与投票</p><div class="podium">' + podiumHtml + '</div></div>'
-          + '<div class="card"><h2>得票对比</h2><div class="simple-chart">' + chartHtml + '</div></div>'
+          + '<div class="card"><h2>得分对比（权重计分：第1名5分~第5名1分）</h2><div class="simple-chart">' + chartHtml + '</div></div>'
           + '<div class="card"><h2>排名详情</h2><div>' + rankHtml + '</div></div>';
       } catch(e) { c.innerHTML = '<div class="empty-hint">加载失败：' + e.message + '</div>'; }
     }
@@ -743,7 +749,7 @@
         awardsData = data.results.slice(0, 5);
         awardsTotalVoters = data.totalVoters || 0;
       } catch(e) { return; }
-      if (!awardsData.length || awardsData.every(function(r) { return r.vote_count === 0; })) {
+      if (!awardsData.length || awardsData.every(function(r) { return r.score === 0; })) {
         var c2 = $('awardsContent');
         if (c2) c2.innerHTML = '<div style="padding:60px 20px;text-align:center;"><div style="font-size:32px;color:var(--red);margin-bottom:12px;">颁奖环节</div><div style="color:var(--text-dim);">暂无投票数据，等待投票结束后揭晓</div></div>';
         return;
@@ -799,7 +805,7 @@
         }
         content += '<div class="aw-info">'
           + '<div class="aw-name">' + work.title + '</div>'
-          + '<div class="aw-votes">' + work.vote_count + ' 票</div>'
+          + '<div class="aw-votes">' + work.score + ' 分</div>'
           + '</div>'
           + '<div class="aw-rank-num">' + (idx + 1) + '</div>';
         frame.innerHTML = content;

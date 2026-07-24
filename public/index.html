@@ -96,10 +96,11 @@
     .vote-card .img-wrap .no-img { color: #D8D2C8; font-size: 32px; }
 
     .vote-card .sel-mark {
-      position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%;
+      position: absolute; top: 10px; right: 10px; min-width: 28px; height: 28px; border-radius: 14px;
       background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; opacity: 0; transform: scale(0);
+      padding: 0 7px; font-size: 13px; font-weight: 700; opacity: 0; transform: scale(0);
       transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+      white-space: nowrap;
     }
     .vote-card.selected .sel-mark { opacity: 1; transform: scale(1); }
 
@@ -156,7 +157,7 @@
 
     var VOTE_LIMIT = 5;
     var allWorks = [];
-    var selectedIds = new Set();
+    var selectedOrder = [];  // 有序数组：第0个=第1名(5分)，第4个=第5名(1分)
     var voterToken = '';
 
     try {
@@ -203,7 +204,7 @@
     }
 
     function renderVote(app) {
-      var html = '<div class="vote-intro"><h2>请选择您心仪的作品</h2><div class="vote-rule">每人限投 <b>1</b> 次&ensp;|&ensp;最多选择 <b>' + VOTE_LIMIT + '</b> 个作品</div></div>';
+      var html = '<div class="vote-intro"><h2>请按排名顺序选择作品</h2><div class="vote-rule">每人限投 <b>1</b> 次&ensp;|&ensp;第1名 <b>5分</b>&ensp;第2名 <b>4分</b>&ensp;第3名 <b>3分</b>&ensp;第4名 <b>2分</b>&ensp;第5名 <b>1分</b></div></div>';
       html += '<div class="vote-grid" id="voteGrid"></div>';
       app.innerHTML = html;
 
@@ -212,7 +213,7 @@
       var gh = '';
       for (var i = 0; i < allWorks.length; i++) {
         var w = allWorks[i];
-        gh += '<div class="vote-card" data-vid="' + w.id + '"><div class="img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '" alt="">' : '<span class="no-img">&#x1F5BC;</span>') + '</div><div class="sel-mark">&#x2713;</div><div class="info"><div class="title">' + w.title + '</div></div></div>';
+        gh += '<div class="vote-card" data-vid="' + w.id + '"><div class="img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '" alt="">' : '<span class="no-img">&#x1F5BC;</span>') + '</div><div class="sel-mark"></div><div class="info"><div class="title">' + w.title + '</div></div></div>';
       }
       grid.innerHTML = gh;
 
@@ -224,7 +225,7 @@
       var bar = document.createElement('div');
       bar.className = 'vote-bar';
       bar.id = 'voteBar';
-      bar.innerHTML = '<div class="vote-count-wrap"><div class="vote-count" id="voteCount">0</div><span class="vote-label">已选择 / 最多' + VOTE_LIMIT + '个</span></div><button class="btn-submit" id="btnSubmit" disabled>请选择作品</button>';
+      bar.innerHTML = '<div class="vote-count-wrap"><div class="vote-count" id="voteCount">0</div><span class="vote-label">已选择 / 需选' + VOTE_LIMIT + '个（点击次序 = 排名）</span></div><button class="btn-submit" id="btnSubmit" disabled>请选择' + VOTE_LIMIT + '个作品</button>';
       document.querySelector('.container').appendChild(bar);
 
       $('btnSubmit').addEventListener('click', submitVote);
@@ -232,34 +233,53 @@
     }
 
     function toggle(id) {
-      if (selectedIds.has(id)) { selectedIds.delete(id); }
-      else if (selectedIds.size < VOTE_LIMIT) { selectedIds.add(id); }
+      var idx = selectedOrder.indexOf(id);
+      if (idx >= 0) {
+        // 取消选择：从数组中移除，后面的排名自动前移
+        selectedOrder.splice(idx, 1);
+      } else if (selectedOrder.length < VOTE_LIMIT) {
+        // 选择：追加到末尾 = 当前最后一个名次
+        selectedOrder.push(id);
+      }
       refreshUI();
+    }
+
+    function rankLabel(i) {
+      var ranks = ['第1名', '第2名', '第3名', '第4名', '第5名'];
+      return ranks[i] || '';
     }
 
     function refreshUI() {
       var cards = document.querySelectorAll('.vote-card');
       for (var i = 0; i < cards.length; i++) {
         var id = parseInt(cards[i].dataset.vid);
-        cards[i].classList.toggle('selected', selectedIds.has(id));
-        cards[i].classList.toggle('disabled', !selectedIds.has(id) && selectedIds.size >= VOTE_LIMIT);
+        var rankIdx = selectedOrder.indexOf(id);
+        var isSel = rankIdx >= 0;
+        cards[i].classList.toggle('selected', isSel);
+        cards[i].classList.toggle('disabled', !isSel && selectedOrder.length >= VOTE_LIMIT);
+        var mark = cards[i].querySelector('.sel-mark');
+        if (mark) { mark.textContent = isSel ? (rankIdx + 1) : ''; }
       }
       var cnt = $('voteCount');
-      if (cnt) { cnt.textContent = selectedIds.size; cnt.classList.toggle('active', selectedIds.size > 0); }
+      if (cnt) { cnt.textContent = selectedOrder.length; cnt.classList.toggle('active', selectedOrder.length > 0); }
       var btn = $('btnSubmit');
-      if (btn) { btn.disabled = selectedIds.size === 0; btn.textContent = selectedIds.size > 0 ? '提交投票 (' + selectedIds.size + ')' : '请选择作品'; }
+      if (btn) {
+        btn.disabled = selectedOrder.length !== VOTE_LIMIT;
+        btn.textContent = selectedOrder.length === VOTE_LIMIT ? '提交投票' : ('已选 ' + selectedOrder.length + '/' + VOTE_LIMIT);
+      }
     }
 
     async function submitVote() {
-      if (selectedIds.size === 0) return;
+      if (selectedOrder.length !== VOTE_LIMIT) return;
       var btn = $('btnSubmit');
       if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
       try {
-        var res = await fetch('/api/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({work_ids:Array.from(selectedIds),voter_token:voterToken}) });
+        var res = await fetch('/api/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({work_ids:selectedOrder,voter_token:voterToken}) });
         var data = await res.json();
         if (data.error) { if(btn){btn.disabled=false;btn.textContent='提交投票';} return alert(data.error); }
         var bar = $('voteBar'); if(bar) bar.remove();
-        $('app').innerHTML = '<div class="banner banner-success"><div class="icon">&#x1F389;</div><h3>投票成功</h3><p>感谢您的参与，您选择了 ' + selectedIds.size + ' 个作品</p></div>';
+        var rankNames = ['第1名(5分)', '第2名(4分)', '第3名(3分)', '第4名(2分)', '第5名(1分)'];
+        $('app').innerHTML = '<div class="banner banner-success"><div class="icon">&#x1F389;</div><h3>投票成功</h3><p>感谢您的参与</p></div>';
       } catch(e) { if(btn){btn.disabled=false;btn.textContent='提交投票';} alert('网络错误，请重试'); }
     }
 

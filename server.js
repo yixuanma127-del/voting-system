@@ -43,6 +43,14 @@ async function initDatabase() {
     )
   `);
 
+  // 迁移：添加 rank 列（用于权重计分：第1名=5分，第2名=4分，第3名=3分，第4名=2分，第5名=1分）
+  try {
+    db.run('ALTER TABLE votes ADD COLUMN rank INTEGER DEFAULT 0');
+    console.log('✅ 已迁移：添加 rank 列');
+  } catch(e) {
+    // 列已存在，忽略
+  }
+
   saveDatabase();
   console.log('✅ 数据库初始化完成（作品列表为空，请在管理后台添加）');
 }
@@ -110,18 +118,15 @@ app.delete('/api/works/:id', (req, res) => {
   res.json({ message: '作品已删除' });
 });
 
-// 投票
+// 投票（按排名权重计分：第1名=5分 第2名=4分 第3名=3分 第4名=2分 第5名=1分）
 app.post('/api/vote', (req, res) => {
   const { work_ids, voter_token } = req.body;
 
   if (!voter_token || !voter_token.trim()) {
     return res.status(400).json({ error: '缺少投票者标识' });
   }
-  if (!Array.isArray(work_ids) || work_ids.length === 0) {
-    return res.status(400).json({ error: '请至少选择1个作品' });
-  }
-  if (work_ids.length > 5) {
-    return res.status(400).json({ error: '最多只能投5个作品' });
+  if (!Array.isArray(work_ids) || work_ids.length !== 5) {
+    return res.status(400).json({ error: '请按排名顺序选择 5 个作品' });
   }
 
   // 检查是否已投票
@@ -130,22 +135,25 @@ app.post('/api/vote', (req, res) => {
     return res.status(400).json({ error: '您已经投过票了，每个用户只能投票一次' });
   }
 
-  // 检查作品是否存在
+  // 检查作品是否存在 + 不能重复
   const allWorks = queryAll('SELECT id FROM works');
   const validIds = allWorks.map(w => w.id);
   const uniqueIds = [...new Set(work_ids)];
+  if (uniqueIds.length !== 5) {
+    return res.status(400).json({ error: '请选择 5 个不重复的作品' });
+  }
   for (const wid of uniqueIds) {
     if (!validIds.includes(wid)) {
       return res.status(400).json({ error: `作品 ID ${wid} 不存在` });
     }
   }
 
-  // 批量插入投票
-  uniqueIds.forEach(wid => {
-    execute('INSERT INTO votes (work_id, voter_token) VALUES (?, ?)', [wid, voter_token.trim()]);
+  // 按排名权重插入：index 0 = 第1名(rank=1) = 5分，index 4 = 第5名(rank=5) = 1分
+  uniqueIds.forEach((wid, i) => {
+    execute('INSERT INTO votes (work_id, voter_token, rank) VALUES (?, ?, ?)', [wid, voter_token.trim(), i + 1]);
   });
 
-  res.json({ message: '投票成功！感谢您的参与', voted_count: uniqueIds.length });
+  res.json({ message: '投票成功！感谢您的参与' });
 });
 
 // 检查是否已投票
@@ -156,13 +164,22 @@ app.get('/api/voter-check', (req, res) => {
   res.json({ hasVoted: result ? result.cnt > 0 : false });
 });
 
-// 获取投票结果
+// 获取投票结果（按权重计分：rank 1=5分，2=4分，3=3分，4=2分，5=1分）
 app.get('/api/results', (req, res) => {
   const results = queryAll(`
     SELECT w.id, w.title, w.description, w.image_data,
-           (SELECT COUNT(*) FROM votes v WHERE v.work_id = w.id) as vote_count
+           COALESCE((SELECT SUM(
+             CASE v.rank
+               WHEN 1 THEN 5
+               WHEN 2 THEN 4
+               WHEN 3 THEN 3
+               WHEN 4 THEN 2
+               WHEN 5 THEN 1
+               ELSE 0
+             END
+           ) FROM votes v WHERE v.work_id = w.id), 0) as score
     FROM works w
-    ORDER BY vote_count DESC, w.id ASC
+    ORDER BY score DESC, w.id ASC
   `);
   const totalVoters = queryOne('SELECT COUNT(DISTINCT voter_token) as cnt FROM votes');
   res.json({ results, totalVoters: totalVoters?.cnt || 0 });

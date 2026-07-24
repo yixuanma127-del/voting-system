@@ -5,72 +5,150 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>作品投票</title>
   <style>
+    :root {
+      --red:      #C41230;
+      --red-dark: #A00E26;
+      --gold:     #C4A24E;
+      --gold-dim: #A68A3E;
+      --surface:  #FAF8F5;
+      --white:    #FFFFFF;
+      --border:   #E8E2D8;
+      --text:     #1C1C1E;
+      --text-dim: #88807A;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.06);
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-      background: #f0f2f5; min-height: 100vh; padding-bottom: 80px;
+      font-family: -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--surface); color: var(--text); min-height: 100dvh;
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
     }
+
+    /* ═══ Header ═══ */
     .header {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff; padding: 16px 20px; text-align: center;
+      background: linear-gradient(135deg, #8B0E22 0%, var(--red) 50%, #B01E30 100%);
+      padding: 28px 24px 24px; text-align: center; position: relative; overflow: hidden;
     }
-    .header h1 { font-size: 20px; font-weight: 800; }
-    .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+    .header::before {
+      content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px;
+      border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); pointer-events: none;
+    }
+    .header::after {
+      content: ''; position: absolute; bottom: -30px; left: -30px; width: 160px; height: 160px;
+      border-radius: 50%; border: 1px solid rgba(255,255,255,0.06); pointer-events: none;
+    }
+    .header-top-bar {
+      width: 40px; height: 2px; background: var(--gold); margin: 0 auto 16px; opacity: 0.7;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 2px; }
+    .header p { font-size: 13px; color: rgba(255,255,255,0.72); margin-top: 6px; letter-spacing: 0.5px; }
 
-    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+    /* ═══ Container ═══ */
+    .container { max-width: 640px; margin: 0 auto; padding: 0 20px; }
 
-    .vote-top { text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 16px; margin: 16px 0; }
-    .vote-top h2 { font-size: 20px; color: #fff; margin-bottom: 6px; }
-    .vote-rule { display: inline-block; margin-top: 8px; padding: 6px 16px; background: rgba(255,255,255,0.25); border-radius: 20px; font-size: 13px; }
+    /* ═══ Status banners ═══ */
+    .banner {
+      text-align: center; padding: 48px 24px; margin: 24px 0; border-radius: 16px;
+      background: var(--white); border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    }
+    .banner-success { border-color: rgba(196,18,48,0.15); }
+    .banner-success .icon { font-size: 48px; margin-bottom: 14px; }
+    .banner-success h3 { font-size: 20px; font-weight: 700; color: var(--red); margin-bottom: 8px; }
+    .banner-success p { font-size: 14px; color: var(--text-dim); }
+    .banner-info { color: var(--text-dim); }
+    .banner-info .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.6; }
+    .banner-info h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 
-    .vote-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    @media (min-width: 500px) { .vote-grid { grid-template-columns: repeat(3, 1fr); } }
+    /* ═══ Vote intro block ═══ */
+    .vote-intro {
+      margin: 20px 0; padding: 24px; text-align: center;
+      background: linear-gradient(135deg, rgba(196,18,48,0.04), rgba(196,18,48,0.01));
+      border: 1px solid rgba(196,18,48,0.08); border-radius: 16px;
+    }
+    .vote-intro h2 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 10px; letter-spacing: 0.5px; }
+    .vote-rule {
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 18px;
+      border: 1px solid rgba(196,162,78,0.35); border-radius: 24px;
+      font-size: 13px; color: var(--gold-dim); letter-spacing: 0.5px;
+    }
+    .vote-rule b { font-weight: 700; color: var(--gold); }
+
+    /* ═══ Vote Grid ═══ */
+    .vote-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
+    @media (min-width: 480px) { .vote-grid { grid-template-columns: repeat(3, 1fr); } }
+
     .vote-card {
-      background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      cursor: pointer; transition: all 0.2s; user-select: none; position: relative;
+      background: var(--white); border: 1.5px solid transparent; border-radius: 14px;
+      overflow: hidden; cursor: pointer; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+      user-select: none; position: relative; box-shadow: var(--shadow-sm);
     }
-    .vote-card:active { transform: scale(0.95); }
-    .vote-card.selected { box-shadow: 0 0 0 3px #667eea, 0 4px 16px rgba(102,126,234,0.35); transform: translateY(-2px); }
-    .vote-card.disabled { opacity: 0.45; pointer-events: none; }
-    .vote-card .v-img-wrap { height: 120px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .vote-card .v-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-    .vote-card .v-img-wrap .no-img { color: #ddd; font-size: 36px; }
-    .vote-card .check-mark { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; opacity: 0; transform: scale(0); transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .vote-card.selected .check-mark { opacity: 1; transform: scale(1); }
-    .vote-card .vinfo { padding: 12px; }
-    .vote-card .vinfo .vtitle { font-size: 14px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vote-card:active { transform: scale(0.96); }
+    .vote-card.selected {
+      border-color: var(--red); box-shadow: 0 0 0 3px rgba(196,18,48,0.12), var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .vote-card.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(0.3); }
 
-    .vote-bar { position: sticky; bottom: 16px; z-index: 9; background: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -2px 16px rgba(0,0,0,0.1); border-radius: 16px; margin-top: 16px; }
-    .vote-count-wrap { display: flex; align-items: center; gap: 8px; }
-    .vote-count { width: 30px; height: 30px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
-    .vote-count.full { background: #f5af19; }
-    .vote-label { font-size: 14px; color: #666; }
-    .btn-vote-submit { padding: 12px 36px; border: none; border-radius: 28px; font-size: 16px; font-weight: 700; cursor: pointer; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2); font-family: inherit; letter-spacing: 1px; }
-    .btn-vote-submit:disabled { background: #ccc; cursor: not-allowed; }
+    .vote-card .img-wrap { height: 130px; background: #F5F2ED; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .vote-card .img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .vote-card .img-wrap .no-img { color: #D8D2C8; font-size: 32px; }
 
-    .success-banner { background: linear-gradient(135deg, #4caf50, #45a049); color: #fff; padding: 40px 20px; border-radius: 16px; text-align: center; }
-    .success-banner .icon { font-size: 56px; margin-bottom: 12px; }
-    .success-banner h3 { font-size: 22px; margin-bottom: 6px; }
-    .success-banner p { font-size: 15px; opacity: 0.9; }
+    .vote-card .sel-mark {
+      position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; border-radius: 50%;
+      background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+    .vote-card.selected .sel-mark { opacity: 1; transform: scale(1); }
 
-    .already-banner { background: #fff; padding: 40px 20px; border-radius: 16px; text-align: center; }
-    .already-banner .icon { font-size: 56px; margin-bottom: 12px; }
-    .already-banner h3 { font-size: 20px; color: #333; margin-bottom: 6px; }
-    .already-banner p { color: #999; font-size: 14px; }
+    .vote-card .info { padding: 14px 12px; }
+    .vote-card .info .title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .empty-hint { text-align: center; padding: 60px 20px; color: #bbb; font-size: 16px; }
-    .error-hint { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
+    /* ═══ Bottom bar ═══ */
+    .vote-bar {
+      position: sticky; bottom: 20px; z-index: 10; margin-top: 20px;
+      background: var(--white); padding: 18px 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md);
+    }
+    .vote-count-wrap { display: flex; align-items: center; gap: 10px; }
+    .vote-count {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--text);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; transition: background 0.3s;
+    }
+    .vote-count.active { background: var(--red); }
+    .vote-label { font-size: 13px; color: var(--text-dim); }
+    .btn-submit {
+      padding: 13px 38px; border: none; border-radius: 28px; font-size: 15px; font-weight: 700;
+      cursor: pointer; color: #fff; background: linear-gradient(135deg, #8B0E22, var(--red));
+      font-family: inherit; letter-spacing: 1px; transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(196,18,48,0.2);
+    }
+    .btn-submit:disabled { background: #D8D2C8; color: #AAA59D; box-shadow: none; cursor: not-allowed; letter-spacing: 0.5px; }
+    .btn-submit:not(:disabled):active { transform: scale(0.97); }
+
+    /* ═══ Footer ═══ */
+    .footer { text-align: center; padding: 32px 20px 40px; color: var(--text-dim); font-size: 12px; letter-spacing: 0.5px; }
+
+    /* ═══ States ═══ */
+    .state-empty, .state-error { text-align: center; padding: 64px 20px; color: var(--text-dim); font-size: 15px; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🏆 作品投票</h1>
+  <header class="header">
+    <div class="header-top-bar"></div>
+    <h1>作品投票</h1>
     <p>请为您喜爱的作品投出宝贵一票</p>
-  </div>
+  </header>
 
   <div class="container" id="app">
-    <div class="empty-hint">加载作品中...</div>
+    <div class="state-empty">加载作品中...</div>
   </div>
+
+  <div class="footer">诚挚感谢您的参与</div>
 
   <script>
   (function() {
@@ -95,100 +173,71 @@
 
     function $(id) { return document.getElementById(id); }
 
-    // ═══ 启动：先检查是否已投票 ═══
-    init();
-
     async function init() {
       var app = $('app');
       if (!app) return;
 
-      // 检查是否已投过票
       try {
-        var checkRes = await fetch('/api/voter-check?token=' + encodeURIComponent(voterToken));
-        var checkData = await checkRes.json();
-        if (checkData.hasVoted) {
-          app.innerHTML = '<div class="already-banner">'
-            + '<div class="icon">✅</div>'
-            + '<h3>您已经投过票了</h3>'
-            + '<p>每人只能投一次，感谢您的参与！</p>'
-            + '</div>';
+        var check = await fetch('/api/voter-check?token=' + encodeURIComponent(voterToken));
+        var cd = await check.json();
+        if (cd.hasVoted) {
+          app.innerHTML = '<div class="banner banner-info"><div class="icon">&#x2705;</div><h3>您已经投过票了</h3><p>每人限投一次，感谢您的参与</p></div>';
           return;
         }
       } catch(e) {}
 
-      // 加载作品
       try {
         var res = await fetch('/api/works');
         allWorks = await res.json();
       } catch(e) {
-        app.innerHTML = '<div class="error-hint">❌ 加载失败，请刷新重试</div>';
+        app.innerHTML = '<div class="state-error">&#x26A0; 加载失败，请刷新重试</div>';
         return;
       }
 
       if (!allWorks || allWorks.length === 0) {
-        app.innerHTML = '<div class="empty-hint">🖼️ 暂无作品</div>';
+        app.innerHTML = '<div class="state-empty">暂无作品，敬请期待</div>';
         return;
       }
 
-      // 渲染投票界面
       renderVote(app);
     }
 
-    function renderVote(container) {
-      var html = '<div class="vote-top"><h2>请选择您喜欢的作品</h2><div class="vote-rule">每人限投 <strong>1</strong> 次 · 最多选 <strong>' + VOTE_LIMIT + '</strong> 个</div></div>';
+    function renderVote(app) {
+      var html = '<div class="vote-intro"><h2>请选择您心仪的作品</h2><div class="vote-rule">每人限投 <b>1</b> 次&ensp;|&ensp;最多选择 <b>' + VOTE_LIMIT + '</b> 个作品</div></div>';
       html += '<div class="vote-grid" id="voteGrid"></div>';
-      container.innerHTML = html;
+      app.innerHTML = html;
 
       var grid = $('voteGrid');
       if (!grid) return;
-      var gridHtml = '';
+      var gh = '';
       for (var i = 0; i < allWorks.length; i++) {
         var w = allWorks[i];
-        gridHtml += '<div class="vote-card" data-vid="' + w.id + '">'
-          + '<div class="v-img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '" alt="' + w.title + '">' : '<span class="no-img">🖼️</span>') + '</div>'
-          + '<div class="check-mark">✓</div>'
-          + '<div class="vinfo"><div class="vtitle">' + w.title + '</div></div>'
-          + '</div>';
+        gh += '<div class="vote-card" data-vid="' + w.id + '"><div class="img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '" alt="">' : '<span class="no-img">&#x1F5BC;</span>') + '</div><div class="sel-mark">&#x2713;</div><div class="info"><div class="title">' + w.title + '</div></div></div>';
       }
-      grid.innerHTML = gridHtml;
+      grid.innerHTML = gh;
 
-      // 绑定点击
       var cards = grid.querySelectorAll('.vote-card');
       for (var j = 0; j < cards.length; j++) {
-        cards[j].addEventListener('click', function() {
-          toggleVote(parseInt(this.dataset.vid));
-        });
+        cards[j].addEventListener('click', function() { toggle(parseInt(this.dataset.vid)); });
       }
 
-      // 底部提交栏
       var bar = document.createElement('div');
       bar.className = 'vote-bar';
       bar.id = 'voteBar';
-      bar.innerHTML = '<div class="vote-count-wrap">'
-        + '<div class="vote-count" id="voteCount">0</div>'
-        + '<span class="vote-label">已选择 / 最多' + VOTE_LIMIT + '个</span>'
-        + '</div>'
-        + '<button class="btn-vote-submit" id="btnVoteSubmit" disabled>请选择作品</button>';
-      document.body.appendChild(bar);
+      bar.innerHTML = '<div class="vote-count-wrap"><div class="vote-count" id="voteCount">0</div><span class="vote-label">已选择 / 最多' + VOTE_LIMIT + '个</span></div><button class="btn-submit" id="btnSubmit" disabled>请选择作品</button>';
+      document.querySelector('.container').appendChild(bar);
 
-      var submitBtn = $('btnVoteSubmit');
-      if (submitBtn) submitBtn.addEventListener('click', submitVote);
-
-      updateVoteUI();
+      $('btnSubmit').addEventListener('click', submitVote);
+      refreshUI();
     }
 
-    function toggleVote(id) {
-      if (selectedIds.has(id)) {
-        selectedIds.delete(id);
-      } else if (selectedIds.size >= VOTE_LIMIT) {
-        return;
-      } else {
-        selectedIds.add(id);
-      }
-      updateVoteUI();
+    function toggle(id) {
+      if (selectedIds.has(id)) { selectedIds.delete(id); }
+      else if (selectedIds.size < VOTE_LIMIT) { selectedIds.add(id); }
+      refreshUI();
     }
 
-    function updateVoteUI() {
+    function refreshUI() {
       var cards = document.querySelectorAll('.vote-card');
       for (var i = 0; i < cards.length; i++) {
         var id = parseInt(cards[i].dataset.vid);
@@ -196,56 +245,25 @@
         cards[i].classList.toggle('disabled', !selectedIds.has(id) && selectedIds.size >= VOTE_LIMIT);
       }
       var cnt = $('voteCount');
-      if (cnt) {
-        cnt.textContent = selectedIds.size;
-        cnt.classList.toggle('full', selectedIds.size >= VOTE_LIMIT);
-      }
-      var btn = $('btnVoteSubmit');
-      if (btn) {
-        btn.disabled = selectedIds.size === 0;
-        btn.textContent = selectedIds.size === 0 ? '请选择作品' : '提交投票（' + selectedIds.size + '）';
-      }
+      if (cnt) { cnt.textContent = selectedIds.size; cnt.classList.toggle('active', selectedIds.size > 0); }
+      var btn = $('btnSubmit');
+      if (btn) { btn.disabled = selectedIds.size === 0; btn.textContent = selectedIds.size > 0 ? '提交投票 (' + selectedIds.size + ')' : '请选择作品'; }
     }
 
     async function submitVote() {
       if (selectedIds.size === 0) return;
-      var btn = $('btnVoteSubmit');
+      var btn = $('btnSubmit');
       if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
-
       try {
-        var res = await fetch('/api/vote', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            work_ids: Array.from(selectedIds),
-            voter_token: voterToken
-          })
-        });
+        var res = await fetch('/api/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({work_ids:Array.from(selectedIds),voter_token:voterToken}) });
         var data = await res.json();
-        if (data.error) {
-          alert(data.error);
-          if (btn) { btn.disabled = false; btn.textContent = '提交投票'; }
-          return;
-        }
-
-        // 移除提交栏
-        var bar = $('voteBar');
-        if (bar) bar.remove();
-
-        // 显示成功
-        var app = $('app');
-        if (app) {
-          app.innerHTML = '<div class="success-banner">'
-            + '<div class="icon">🎉</div>'
-            + '<h3>投票成功！</h3>'
-            + '<p>感谢您的参与，您投了 ' + selectedIds.size + ' 个作品</p>'
-            + '</div>';
-        }
-      } catch(e) {
-        alert('网络错误，请重试');
-        if (btn) { btn.disabled = false; btn.textContent = '提交投票'; }
-      }
+        if (data.error) { if(btn){btn.disabled=false;btn.textContent='提交投票';} return alert(data.error); }
+        var bar = $('voteBar'); if(bar) bar.remove();
+        $('app').innerHTML = '<div class="banner banner-success"><div class="icon">&#x1F389;</div><h3>投票成功</h3><p>感谢您的参与，您选择了 ' + selectedIds.size + ' 个作品</p></div>';
+      } catch(e) { if(btn){btn.disabled=false;btn.textContent='提交投票';} alert('网络错误，请重试'); }
     }
+
+    init();
   })();
   </script>
 </body>

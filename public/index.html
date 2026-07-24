@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>作品投票</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+      background: #f0f2f5; min-height: 100vh; padding-bottom: 80px;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; padding: 16px 20px; text-align: center;
+    }
+    .header h1 { font-size: 20px; font-weight: 800; }
+    .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
+    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+    .vote-top { text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 16px; margin: 16px 0; }
+    .vote-top h2 { font-size: 20px; color: #fff; margin-bottom: 6px; }
+    .vote-rule { display: inline-block; margin-top: 8px; padding: 6px 16px; background: rgba(255,255,255,0.25); border-radius: 20px; font-size: 13px; }
+
+    .vote-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 500px) { .vote-grid { grid-template-columns: repeat(3, 1fr); } }
+    .vote-card {
+      background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer; transition: all 0.2s; user-select: none; position: relative;
+    }
+    .vote-card:active { transform: scale(0.95); }
+    .vote-card.selected { box-shadow: 0 0 0 3px #667eea, 0 4px 16px rgba(102,126,234,0.35); transform: translateY(-2px); }
+    .vote-card.disabled { opacity: 0.45; pointer-events: none; }
+    .vote-card .v-img-wrap { height: 120px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .vote-card .v-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .vote-card .v-img-wrap .no-img { color: #ddd; font-size: 36px; }
+    .vote-card .check-mark { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; opacity: 0; transform: scale(0); transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .vote-card.selected .check-mark { opacity: 1; transform: scale(1); }
+    .vote-card .vinfo { padding: 12px; }
+    .vote-card .vinfo .vtitle { font-size: 14px; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .vote-bar { position: sticky; bottom: 16px; z-index: 9; background: #fff; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -2px 16px rgba(0,0,0,0.1); border-radius: 16px; margin-top: 16px; }
+    .vote-count-wrap { display: flex; align-items: center; gap: 8px; }
+    .vote-count { width: 30px; height: 30px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+    .vote-count.full { background: #f5af19; }
+    .vote-label { font-size: 14px; color: #666; }
+    .btn-vote-submit { padding: 12px 36px; border: none; border-radius: 28px; font-size: 16px; font-weight: 700; cursor: pointer; color: #fff; background: linear-gradient(135deg, #667eea, #764ba2); font-family: inherit; letter-spacing: 1px; }
+    .btn-vote-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    .success-banner { background: linear-gradient(135deg, #4caf50, #45a049); color: #fff; padding: 40px 20px; border-radius: 16px; text-align: center; }
+    .success-banner .icon { font-size: 56px; margin-bottom: 12px; }
+    .success-banner h3 { font-size: 22px; margin-bottom: 6px; }
+    .success-banner p { font-size: 15px; opacity: 0.9; }
+
+    .already-banner { background: #fff; padding: 40px 20px; border-radius: 16px; text-align: center; }
+    .already-banner .icon { font-size: 56px; margin-bottom: 12px; }
+    .already-banner h3 { font-size: 20px; color: #333; margin-bottom: 6px; }
+    .already-banner p { color: #999; font-size: 14px; }
+
+    .empty-hint { text-align: center; padding: 60px 20px; color: #bbb; font-size: 16px; }
+    .error-hint { text-align: center; padding: 60px 20px; color: #999; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🏆 作品投票</h1>
+    <p>请为您喜爱的作品投出宝贵一票</p>
+  </div>
+
+  <div class="container" id="app">
+    <div class="empty-hint">加载作品中...</div>
+  </div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    var VOTE_LIMIT = 5;
+    var allWorks = [];
+    var selectedIds = new Set();
+    var voterToken = '';
+
+    try {
+      voterToken = localStorage.getItem('voter_token') || '';
+      if (!voterToken) {
+        voterToken = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : 'v' + Date.now() + Math.random().toString(36).slice(2);
+        try { localStorage.setItem('voter_token', voterToken); } catch(e) {}
+      }
+    } catch(e) {
+      voterToken = 'v' + Date.now();
+    }
+
+    function $(id) { return document.getElementById(id); }
+
+    // ═══ 启动：先检查是否已投票 ═══
+    init();
+
+    async function init() {
+      var app = $('app');
+      if (!app) return;
+
+      // 检查是否已投过票
+      try {
+        var checkRes = await fetch('/api/voter-check?token=' + encodeURIComponent(voterToken));
+        var checkData = await checkRes.json();
+        if (checkData.hasVoted) {
+          app.innerHTML = '<div class="already-banner">'
+            + '<div class="icon">✅</div>'
+            + '<h3>您已经投过票了</h3>'
+            + '<p>每人只能投一次，感谢您的参与！</p>'
+            + '</div>';
+          return;
+        }
+      } catch(e) {}
+
+      // 加载作品
+      try {
+        var res = await fetch('/api/works');
+        allWorks = await res.json();
+      } catch(e) {
+        app.innerHTML = '<div class="error-hint">❌ 加载失败，请刷新重试</div>';
+        return;
+      }
+
+      if (!allWorks || allWorks.length === 0) {
+        app.innerHTML = '<div class="empty-hint">🖼️ 暂无作品</div>';
+        return;
+      }
+
+      // 渲染投票界面
+      renderVote(app);
+    }
+
+    function renderVote(container) {
+      var html = '<div class="vote-top"><h2>请选择您喜欢的作品</h2><div class="vote-rule">每人限投 <strong>1</strong> 次 · 最多选 <strong>' + VOTE_LIMIT + '</strong> 个</div></div>';
+      html += '<div class="vote-grid" id="voteGrid"></div>';
+      container.innerHTML = html;
+
+      var grid = $('voteGrid');
+      if (!grid) return;
+      var gridHtml = '';
+      for (var i = 0; i < allWorks.length; i++) {
+        var w = allWorks[i];
+        gridHtml += '<div class="vote-card" data-vid="' + w.id + '">'
+          + '<div class="v-img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '" alt="' + w.title + '">' : '<span class="no-img">🖼️</span>') + '</div>'
+          + '<div class="check-mark">✓</div>'
+          + '<div class="vinfo"><div class="vtitle">' + w.title + '</div></div>'
+          + '</div>';
+      }
+      grid.innerHTML = gridHtml;
+
+      // 绑定点击
+      var cards = grid.querySelectorAll('.vote-card');
+      for (var j = 0; j < cards.length; j++) {
+        cards[j].addEventListener('click', function() {
+          toggleVote(parseInt(this.dataset.vid));
+        });
+      }
+
+      // 底部提交栏
+      var bar = document.createElement('div');
+      bar.className = 'vote-bar';
+      bar.id = 'voteBar';
+      bar.innerHTML = '<div class="vote-count-wrap">'
+        + '<div class="vote-count" id="voteCount">0</div>'
+        + '<span class="vote-label">已选择 / 最多' + VOTE_LIMIT + '个</span>'
+        + '</div>'
+        + '<button class="btn-vote-submit" id="btnVoteSubmit" disabled>请选择作品</button>';
+      document.body.appendChild(bar);
+
+      var submitBtn = $('btnVoteSubmit');
+      if (submitBtn) submitBtn.addEventListener('click', submitVote);
+
+      updateVoteUI();
+    }
+
+    function toggleVote(id) {
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+      } else if (selectedIds.size >= VOTE_LIMIT) {
+        return;
+      } else {
+        selectedIds.add(id);
+      }
+      updateVoteUI();
+    }
+
+    function updateVoteUI() {
+      var cards = document.querySelectorAll('.vote-card');
+      for (var i = 0; i < cards.length; i++) {
+        var id = parseInt(cards[i].dataset.vid);
+        cards[i].classList.toggle('selected', selectedIds.has(id));
+        cards[i].classList.toggle('disabled', !selectedIds.has(id) && selectedIds.size >= VOTE_LIMIT);
+      }
+      var cnt = $('voteCount');
+      if (cnt) {
+        cnt.textContent = selectedIds.size;
+        cnt.classList.toggle('full', selectedIds.size >= VOTE_LIMIT);
+      }
+      var btn = $('btnVoteSubmit');
+      if (btn) {
+        btn.disabled = selectedIds.size === 0;
+        btn.textContent = selectedIds.size === 0 ? '请选择作品' : '提交投票（' + selectedIds.size + '）';
+      }
+    }
+
+    async function submitVote() {
+      if (selectedIds.size === 0) return;
+      var btn = $('btnVoteSubmit');
+      if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
+
+      try {
+        var res = await fetch('/api/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            work_ids: Array.from(selectedIds),
+            voter_token: voterToken
+          })
+        });
+        var data = await res.json();
+        if (data.error) {
+          alert(data.error);
+          if (btn) { btn.disabled = false; btn.textContent = '提交投票'; }
+          return;
+        }
+
+        // 移除提交栏
+        var bar = $('voteBar');
+        if (bar) bar.remove();
+
+        // 显示成功
+        var app = $('app');
+        if (app) {
+          app.innerHTML = '<div class="success-banner">'
+            + '<div class="icon">🎉</div>'
+            + '<h3>投票成功！</h3>'
+            + '<p>感谢您的参与，您投了 ' + selectedIds.size + ' 个作品</p>'
+            + '</div>';
+        }
+      } catch(e) {
+        alert('网络错误，请重试');
+        if (btn) { btn.disabled = false; btn.textContent = '提交投票'; }
+      }
+    }
+  })();
+  </script>
+</body>
+</html>

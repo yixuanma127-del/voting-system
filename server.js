@@ -175,15 +175,10 @@ app.post('/api/reset-votes', (req, res) => {
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  首页 → 直接进入投票
+//  首页 → 观众投票页面（无管理功能）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 app.get('/', (req, res) => {
-  res.redirect('/admin.html?tab=vote');
-});
-
-// 短网址，同样跳投票页
-app.get('/v', (req, res) => {
-  res.redirect('/admin.html?tab=vote');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─────────── 启动服务 ───────────

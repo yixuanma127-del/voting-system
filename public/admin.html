@@ -417,7 +417,6 @@
 
   <div class="tabs">
     <div class="tab active" id="tabManage">作品管理</div>
-    <div class="tab" id="tabVote">投票预览</div>
     <div class="tab" id="tabResults">实时结果</div>
     <div class="tab" id="tabAwards">颁奖</div>
   </div>
@@ -464,8 +463,6 @@
         <div class="work-grid" id="workList"><div class="empty-hint">暂无作品，请在上方添加</div></div>
       </div>
     </div>
-
-    <div class="page" id="pageVote"><div id="voteContent"></div></div>
 
     <div class="page" id="pageResults"><div id="resultsContent"><div class="empty-hint">加载中...</div></div></div>
 
@@ -521,18 +518,16 @@
         pages[j].classList.toggle('active', pages[j].id === 'page' + page.charAt(0).toUpperCase() + page.slice(1));
       }
       if (page === 'manage') { refreshManage(); }
-      if (page === 'vote')   { renderVotePage(); }
       if (page === 'results') { renderResultsPage(); }
       if (page === 'awards') { renderAwardsPage(); }
     }
 
     safeBind('tabManage', 'click', function() { switchPage('manage'); });
-    safeBind('tabVote', 'click', function() { switchPage('vote'); });
     safeBind('tabResults', 'click', function() { switchPage('results'); });
     safeBind('tabAwards', 'click', function() { switchPage('awards'); });
 
     var urlTab = new URLSearchParams(location.search).get('tab');
-    if (urlTab === 'vote' || urlTab === 'results' || urlTab === 'awards') { switchPage(urlTab); }
+    if (urlTab === 'results' || urlTab === 'awards') { switchPage(urlTab); }
 
     function refreshManage() { loadWorks(); loadResultsMini(); }
 
@@ -612,85 +607,6 @@
         var extra = $('headerExtra');
         if (extra) extra.textContent = data.totalVoters + ' 人已投票';
       } catch(e) {}
-    }
-
-    async function renderVotePage() {
-      var c = $('voteContent'); if (!c) return;
-      try {
-        var checkRes = await fetch('/api/voter-check?token=' + encodeURIComponent(voterToken));
-        var checkData = await checkRes.json();
-        if (checkData.hasVoted) {
-          c.innerHTML = '<div class="card"><div class="already-banner"><div style="font-size:48px;margin-bottom:8px;">&#x2705;</div><h3 style="color:var(--text);">您已经投过票了</h3><p style="color:var(--text-dim);">每人只能投一次，感谢参与</p></div></div>';
-          return;
-        }
-      } catch(e) {}
-      c.innerHTML = '<div class="empty-hint">加载作品列表中...</div>';
-      try {
-        var res = await fetch('/api/works');
-        allWorks = await res.json();
-      } catch(e) { c.innerHTML = '<div class="card"><div class="empty-hint">加载失败</div></div>'; return; }
-      if (!allWorks.length) { c.innerHTML = '<div class="card"><div class="empty-hint">暂时没有作品</div></div>'; return; }
-      selectedOrder = [];
-      renderVoteCards(c);
-    }
-
-    function renderVoteCards(container) {
-      var html = '<div class="vote-top"><h2>请按排名顺序选择作品</h2><div class="vote-rule">第1名 <strong>5分</strong>&ensp;第2名 <strong>4分</strong>&ensp;第3名 <strong>3分</strong>&ensp;第4名 <strong>2分</strong>&ensp;第5名 <strong>1分</strong></div></div>';
-      html += '<div class="vote-bar" id="voteBar">';
-      html += '<div style="display:flex;align-items:center;"><div class="vote-count" id="voteCount">0</div><span class="vote-label">已选择 / 需选' + VOTE_LIMIT + '个（点击次序 = 排名）</span></div>';
-      html += '<button class="btn-vote-submit" id="btnVoteSubmit" disabled>请选择' + VOTE_LIMIT + '个作品</button></div>';
-      html += '<div class="vote-grid" id="voteGrid"></div>';
-      container.innerHTML = html;
-      var grid = $('voteGrid'); if (!grid) return;
-      var gridHtml = '';
-      for (var i = 0; i < allWorks.length; i++) {
-        var w = allWorks[i];
-        gridHtml += '<div class="vote-card" data-vid="' + w.id + '">'
-          + '<div class="v-img-wrap">' + (w.image_data ? '<img src="' + w.image_data + '">' : '<span class="no-img">&#x1F5BC;</span>') + '</div>'
-          + '<div class="check-mark"></div><div class="vinfo"><div class="vtitle">' + w.title + '</div></div></div>';
-      }
-      grid.innerHTML = gridHtml;
-      var cards = grid.querySelectorAll('.vote-card');
-      for (var j = 0; j < cards.length; j++) {
-        cards[j].addEventListener('click', function() { toggleVote(parseInt(this.dataset.vid)); });
-      }
-      var submitBtn = $('btnVoteSubmit');
-      if (submitBtn) submitBtn.addEventListener('click', submitVote);
-      updateVoteUI();
-    }
-
-    function toggleVote(id) {
-      var idx = selectedOrder.indexOf(id);
-      if (idx >= 0) { selectedOrder.splice(idx, 1); }
-      else if (selectedOrder.length >= VOTE_LIMIT) { return; }
-      else { selectedOrder.push(id); }
-      updateVoteUI();
-    }
-    function updateVoteUI() {
-      var cards = document.querySelectorAll('.vote-card');
-      for (var i = 0; i < cards.length; i++) {
-        var id = parseInt(cards[i].dataset.vid);
-        var rankIdx = selectedOrder.indexOf(id);
-        var isSel = rankIdx >= 0;
-        cards[i].classList.toggle('selected', isSel);
-        cards[i].classList.toggle('disabled', !isSel && selectedOrder.length >= VOTE_LIMIT);
-        var mark = cards[i].querySelector('.check-mark');
-        if (mark) { mark.textContent = isSel ? (rankIdx + 1) : ''; }
-      }
-      var cnt = $('voteCount'); if (cnt) { cnt.textContent = selectedOrder.length; cnt.classList.toggle('full', selectedOrder.length >= VOTE_LIMIT); }
-      var btn = $('btnVoteSubmit');
-      if (btn) { btn.disabled = selectedOrder.length !== VOTE_LIMIT; btn.textContent = selectedOrder.length === VOTE_LIMIT ? '提交投票' : ('已选 ' + selectedOrder.length + '/' + VOTE_LIMIT); }
-    }
-    async function submitVote() {
-      if (selectedOrder.length !== VOTE_LIMIT) return;
-      var btn = $('btnVoteSubmit'); if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
-      try {
-        var res = await fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ work_ids: selectedOrder, voter_token: voterToken }) });
-        var data = await res.json();
-        if (data.error) { alert(data.error); if (btn) { btn.disabled = false; btn.textContent = '提交投票'; } return; }
-        var c = $('voteContent');
-        if (c) { c.innerHTML = '<div class="card"><div class="success-banner"><div class="icon">&#x1F389;</div><h3>投票成功</h3><p>感谢您的参与</p></div></div>'; }
-      } catch(e) { alert('提交失败：' + e.message); if (btn) { btn.disabled = false; btn.textContent = '提交投票'; } }
     }
 
     async function renderResultsPage() {

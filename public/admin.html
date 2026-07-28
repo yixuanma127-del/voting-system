@@ -54,6 +54,23 @@
     .tab:hover { color: var(--red); }
     .tab.active { color: var(--red); border-bottom-color: var(--red); }
 
+    /* ═══ Event Bar ═══ */
+    .event-bar {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+      padding: 12px 16px; background: #fff; border-bottom: 1px solid var(--border); gap: 10px;
+    }
+    .event-bar-left { display: flex; align-items: center; gap: 8px; }
+    .event-bar-label { font-size: 13px; font-weight: 600; color: var(--text-dim); white-space: nowrap; }
+    .event-select {
+      padding: 6px 30px 6px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; font-weight: 700; color: var(--red); background: #FAF9F7;
+      font-family: inherit; cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%23C41230'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    .event-bar-right { display: flex; align-items: center; }
+    .event-bar-right .btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; }
+
     .container { max-width: 960px; margin: 20px auto; padding: 0 16px; }
     .page { display: none; }
     .page.active { display: block; }
@@ -421,6 +438,17 @@
     <div class="tab" id="tabAwards">颁奖</div>
   </div>
 
+  <div class="event-bar">
+    <div class="event-bar-left">
+      <span class="event-bar-label">当前活动：</span>
+      <select id="eventSelect" class="event-select"></select>
+    </div>
+    <div class="event-bar-right">
+      <button class="btn btn-sm" style="background:#2E7D32;color:#fff;margin-right:6px;" id="btnAddEvent">+ 新建活动</button>
+      <button class="btn btn-sm" style="background:#C62828;color:#fff;" id="btnDelEvent">删除活动</button>
+    </div>
+  </div>
+
   <div class="container">
 
     <div class="page active" id="pageManage">
@@ -474,7 +502,73 @@
     'use strict';
 
     var VOTE_LIMIT = 5;
+    var currentEventId = 0;
+    var currentEventName = '';
     var allWorks = [];
+
+    // ─────────── 活动管理 ───────────
+    async function loadEvents() {
+      try {
+        var res = await fetch('/api/events');
+        var events = await res.json();
+        var sel = $('eventSelect');
+        if (!sel) return;
+        sel.innerHTML = '';
+        for (var i = 0; i < events.length; i++) {
+          sel.innerHTML += '<option value="' + events[i].id + '">' + events[i].name + '</option>';
+        }
+        if (events.length > 0) {
+          currentEventId = parseInt(sel.value);
+          currentEventName = sel.options[sel.selectedIndex].text;
+          loadAll();
+        } else {
+          currentEventId = 0;
+          currentEventName = '暂无活动';
+        }
+      } catch(e) { console.error('加载活动失败', e); }
+    }
+
+    function onEventChange() {
+      var sel = $('eventSelect');
+      currentEventId = parseInt(sel.value);
+      currentEventName = sel.options[sel.selectedIndex].text;
+      loadAll();
+    }
+
+    async function addEvent() {
+      var name = prompt('请输入活动名称（如「AI营销共识营 -- 视频创作」）：');
+      if (!name || !name.trim()) return;
+      try {
+        await fetch('/api/events', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim() })
+        });
+        await loadEvents();
+        var sel = $('eventSelect');
+        if (sel) { sel.value = sel.options[sel.options.length - 1].value; onEventChange(); }
+      } catch(e) { alert('创建失败：' + e.message); }
+    }
+
+    async function deleteEvent() {
+      var sel = $('eventSelect');
+      var name = sel.options[sel.selectedIndex].text;
+      if (!confirm('确定删除活动「' + name + '」？将一并删除该活动的所有作品和投票数据，不可恢复！')) return;
+      try {
+        await fetch('/api/events/' + currentEventId, { method: 'DELETE' });
+        await loadEvents();
+      } catch(e) { alert('删除失败：' + e.message); }
+    }
+
+    async function loadAll() {
+      loadWorks();
+      loadResultsMini();
+      if (currentPage === 'results') renderResultsPage();
+      if (currentPage === 'awards') renderAwardsPage();
+    }
+
+    safeBind('eventSelect', 'change', onEventChange);
+    safeBind('btnAddEvent', 'click', addEvent);
+    safeBind('btnDelEvent', 'click', deleteEvent);
     var selectedOrder = [];  // 有序数组：第0个=第1名(5分)，第4个=第5名(1分)
     var voterToken = '';
     var currentPage = 'manage';
@@ -529,7 +623,10 @@
     var urlTab = new URLSearchParams(location.search).get('tab');
     if (urlTab === 'results' || urlTab === 'awards') { switchPage(urlTab); }
 
-    function refreshManage() { loadWorks(); loadResultsMini(); }
+    function refreshManage() { loadAll(); }
+
+    // 页面加载时先拉活动列表
+    loadEvents();
 
     safeBind('btnAdd', 'click', async function() {
       var titleInput = $('inputTitle');
@@ -550,7 +647,7 @@
       try {
         var res = await fetch('/api/works', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: title, description: '', image_data: imageData }),
+          body: JSON.stringify({ event_id: currentEventId, title: title, description: '', image_data: imageData }),
         });
         var data = await res.json();
         if (data.error) { alert(data.error); return; }
@@ -565,14 +662,18 @@
     });
 
     safeBind('btnResetVotes', 'click', async function() {
-      if (!confirm('确定清空所有投票数据？不可恢复！')) return;
-      try { await fetch('/api/reset-votes', { method: 'POST' }); alert('已重置'); loadResultsMini(); }
-      catch(e) { alert('重置失败：' + e.message); }
+      if (!confirm('确定清空活动「' + currentEventName + '」的投票数据？不可恢复！')) return;
+      try {
+        await fetch('/api/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event_id: currentEventId }) });
+        alert('已重置');
+        loadAll();
+      } catch(e) { alert('重置失败：' + e.message); }
     });
 
     async function loadWorks() {
       try {
-        var res = await fetch('/api/works');
+        var url = '/api/works' + (currentEventId ? '?event_id=' + currentEventId : '');
+        var res = await fetch(url);
         var text = await res.text();
         try { allWorks = JSON.parse(text); } catch(e) { allWorks = []; }
         var label = $('workCountLabel');
@@ -602,7 +703,8 @@
 
     async function loadResultsMini() {
       try {
-        var res = await fetch('/api/results');
+        var url = '/api/results' + (currentEventId ? '?event_id=' + currentEventId : '');
+        var res = await fetch(url);
         var data = await res.json();
         var extra = $('headerExtra');
         if (extra) extra.textContent = data.totalVoters + ' 人已投票';
@@ -612,7 +714,8 @@
     async function renderResultsPage() {
       var c = $('resultsContent'); if (!c) return;
       try {
-        var res = await fetch('/api/results'); var data = await res.json();
+        var url = '/api/results' + (currentEventId ? '?event_id=' + currentEventId : '');
+        var res = await fetch(url); var data = await res.json();
         var top5 = data.results.slice(0, 5);
         if (!top5.length || top5.every(function(r) { return r.score === 0; })) {
           c.innerHTML = '<div class="card"><div class="empty-hint" style="font-size:16px;">等待投票中...</div></div>'; return;
@@ -660,10 +763,12 @@
     async function renderAwardsPage() {
       exitAwards();
       try {
-        var res = await fetch('/api/results');
+        var url = '/api/results' + (currentEventId ? '?event_id=' + currentEventId : '');
+        var res = await fetch(url);
         var data = await res.json();
         awardsData = data.results.slice(0, 5);
         awardsTotalVoters = data.totalVoters || 0;
+        currentEventName = (data.event && data.event.name) || currentEventName;
       } catch(e) { return; }
       if (!awardsData.length || awardsData.every(function(r) { return r.score === 0; })) {
         var c2 = $('awardsContent');
@@ -688,7 +793,7 @@
       overlay.id = 'awardsOverlay';
       overlay.innerHTML = ''
         + '<button class="award-exit-btn" onclick="window.award_exit()">&#x2190; 退出全屏</button>'
-        + '<div class="award-title">颁奖典礼</div>'
+        + '<div class="award-title">' + currentEventName + '</div>'
         + '<div class="award-divider"></div>'
         + '<div class="award-subtitle">共 ' + awardsTotalVoters + ' 人参与投票</div>'
         + '<button class="award-start-btn" id="btnAwardStart" onclick="window.award_doReveal()">开始揭晓</button>'

@@ -44,6 +44,16 @@
     }
     .header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 2px; }
     .header p { font-size: 13px; color: rgba(255,255,255,0.72); margin-top: 6px; letter-spacing: 0.5px; }
+    .header select {
+      margin-top: 10px; padding: 6px 28px 6px 12px; border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; font-size: 13px;
+      font-family: inherit; cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M5 7L1 3h8z' fill='white'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+    }
+    .header select option { color: #333; background: #fff; }
+    .header select:focus { outline: none; border-color: rgba(255,255,255,0.6); }
+    .event-label { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 8px; display: block; }
 
     /* ═══ Container ═══ */
     .container { max-width: 640px; margin: 0 auto; padding: 0 20px; }
@@ -143,6 +153,8 @@
     <div class="header-top-bar"></div>
     <h1>作品投票</h1>
     <p>请为您喜爱的作品投出宝贵一票</p>
+    <span class="event-label">当前活动</span>
+    <select id="eventSelector" onchange="onEventChange()"></select>
   </header>
 
   <div class="container" id="app">
@@ -159,6 +171,9 @@
     var allWorks = [];
     var selectedOrder = [];  // 有序数组：第0个=第1名(5分)，第4个=第5名(1分)
     var voterToken = '';
+    var currentEventId = 0;
+    var currentEventName = '';
+    var allEvents = [];
 
     try {
       voterToken = localStorage.getItem('voter_token') || '';
@@ -174,12 +189,50 @@
 
     function $(id) { return document.getElementById(id); }
 
+    async function loadEvents() {
+      try {
+        var res = await fetch('/api/events');
+        allEvents = await res.json();
+        if (allEvents.length > 0) {
+          currentEventId = allEvents[0].id;
+          currentEventName = allEvents[0].name;
+        }
+        renderEventSelector();
+      } catch(e) {}
+    }
+
+    function renderEventSelector() {
+      var sel = $('eventSelector');
+      if (!sel) return;
+      sel.innerHTML = '';
+      for (var i = 0; i < allEvents.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = allEvents[i].id;
+        opt.textContent = allEvents[i].name;
+        if (allEvents[i].id === currentEventId) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+
+    function onEventChange() {
+      var sel = $('eventSelector');
+      currentEventId = parseInt(sel.value);
+      currentEventName = sel.options[sel.selectedIndex].text;
+      init();
+    }
+
     async function init() {
       var app = $('app');
       if (!app) return;
 
+      if (!currentEventId && allEvents.length > 0) {
+        currentEventId = allEvents[0].id;
+        currentEventName = allEvents[0].name;
+      }
+
       try {
-        var check = await fetch('/api/voter-check?token=' + encodeURIComponent(voterToken));
+        var checkUrl = '/api/vote-check?token=' + encodeURIComponent(voterToken) + (currentEventId ? '&event_id=' + currentEventId : '');
+        var check = await fetch(checkUrl);
         var cd = await check.json();
         if (cd.hasVoted) {
           app.innerHTML = '<div class="banner banner-info"><div class="icon">&#x2705;</div><h3>您已经投过票了</h3><p>每人限投一次，感谢您的参与</p></div>';
@@ -188,7 +241,8 @@
       } catch(e) {}
 
       try {
-        var res = await fetch('/api/works');
+        var worksUrl = '/api/works' + (currentEventId ? '?event_id=' + currentEventId : '');
+        var res = await fetch(worksUrl);
         allWorks = await res.json();
       } catch(e) {
         app.innerHTML = '<div class="state-error">&#x26A0; 加载失败，请刷新重试</div>';
@@ -274,7 +328,7 @@
       var btn = $('btnSubmit');
       if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
       try {
-        var res = await fetch('/api/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({work_ids:selectedOrder,voter_token:voterToken}) });
+        var res = await fetch('/api/vote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_id: currentEventId, work_ids:selectedOrder, voter_token:voterToken}) });
         var data = await res.json();
         if (data.error) { if(btn){btn.disabled=false;btn.textContent='提交投票';} return alert(data.error); }
         var bar = $('voteBar'); if(bar) bar.remove();
@@ -283,7 +337,7 @@
       } catch(e) { if(btn){btn.disabled=false;btn.textContent='提交投票';} alert('网络错误，请重试'); }
     }
 
-    init();
+    loadEvents().then(function() { init(); });
   })();
   </script>
 </body>

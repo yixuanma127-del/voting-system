@@ -24,35 +24,58 @@ async function initDatabase() {
     console.log('🆕 创建新数据库');
   }
 
+  // 活动表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // 作品表
   db.run(`
     CREATE TABLE IF NOT EXISTS works (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_id INTEGER DEFAULT 1,
       title TEXT NOT NULL,
+      author TEXT DEFAULT '',
       description TEXT DEFAULT '',
       image_data TEXT DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
+  // 投票表
   db.run(`
     CREATE TABLE IF NOT EXISTS votes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       work_id INTEGER NOT NULL,
+      event_id INTEGER DEFAULT 1,
       voter_token TEXT NOT NULL,
+      rank INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  // 迁移：添加 rank 列（用于权重计分：第1名=5分，第2名=4分，第3名=3分，第4名=2分，第5名=1分）
-  try {
-    db.run('ALTER TABLE votes ADD COLUMN rank INTEGER DEFAULT 0');
-    console.log('✅ 已迁移：添加 rank 列');
-  } catch(e) {
-    // 列已存在，忽略
+  // 迁移：添加 event_id 列
+  try { db.run('ALTER TABLE works ADD COLUMN event_id INTEGER DEFAULT 1'); console.log('✅ works 已添加 event_id'); } catch(e) {}
+  try { db.run('ALTER TABLE votes ADD COLUMN event_id INTEGER DEFAULT 1'); console.log('✅ votes 已添加 event_id'); } catch(e) {}
+  try { db.run('ALTER TABLE works ADD COLUMN author TEXT DEFAULT \'\''); } catch(e) {}
+  try { db.run('ALTER TABLE votes ADD COLUMN rank INTEGER DEFAULT 0'); } catch(e) {}
+
+  // 创建默认活动（如果没有任何活动）
+  const eventCount = queryOne('SELECT COUNT(*) as cnt FROM events');
+  if (!eventCount || eventCount.cnt === 0) {
+    db.run('INSERT INTO events (name) VALUES (?)', ['默认活动']);
+    // 将现有数据归属到默认活动
+    db.run('UPDATE works SET event_id = 1 WHERE event_id IS NULL OR event_id = 0');
+    db.run('UPDATE votes SET event_id = 1 WHERE event_id IS NULL OR event_id = 0');
+    console.log('✅ 已创建默认活动');
   }
 
   saveDatabase();
-  console.log('✅ 数据库初始化完成（作品列表为空，请在管理后台添加）');
+  console.log('✅ 数据库初始化完成');
 }
 
 function saveDatabase() {
@@ -86,25 +109,81 @@ function execute(sql, params = []) {
 
 // ─────────── 中间件 ───────────
 app.use(express.json({ limit: '50mb' }));
+
+// CORS 支持（微信小程序需要）
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─────────── API 路由 ───────────
+// ─────────── 活动 API ───────────
 
-// 获取所有作品
+// 获取所有活动
+app.get('/api/events', (req, res) => {
+  const events = queryAll('SELECT * FROM events ORDER BY id DESC');
+  res.json(events);
+});
+
+// 创建活动
+app.post('/api/events', (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: '活动名称不能为空' });
+  }
+  execute('INSERT INTO events (name) VALUES (?)', [name.trim()]);
+  const lastId = queryOne('SELECT last_insert_rowid() as id');
+  res.json({ id: lastId?.id, message: '活动创建成功' });
+});
+
+// 删除活动（级联删除作品和投票）
+app.delete('/api/events/:id', (req, res) => {
+  const { id } = req.params;
+  const event = queryOne('SELECT * FROM events WHERE id = ?', [id]);
+  if (!event) return res.status(404).json({ error: '活动不存在' });
+
+  execute('DELETE FROM votes WHERE event_id = ?', [id]);
+  execute('DELETE FROM works WHERE event_id = ?', [id]);
+  execute('DELETE FROM events WHERE id = ?', [id]);
+  res.json({ message: '活动已删除（含作品和投票数据）' });
+});
+
+// 获取默认活动
+app.get('/api/events/default', (req, res) => {
+  const event = queryOne('SELECT * FROM events ORDER BY id DESC LIMIT 1');
+  res.json(event || { id: 0, name: '未命名活动' });
+});
+
+// ─────────── 作品 API ───────────
+
+// 获取作品（可按活动过滤）
 app.get('/api/works', (req, res) => {
-  const works = queryAll('SELECT * FROM works ORDER BY id ASC');
+  const eventId = req.query.event_id;
+  let works;
+  if (eventId) {
+    works = queryAll('SELECT * FROM works WHERE event_id = ? ORDER BY id ASC', [eventId]);
+  } else {
+    works = queryAll('SELECT * FROM works ORDER BY id ASC');
+  }
   res.json(works);
 });
 
 // 添加作品
 app.post('/api/works', (req, res) => {
-  const { title, description, image_data } = req.body;
+  const { event_id, title, author, description, image_data } = req.body;
   if (!title || !title.trim()) {
     return res.status(400).json({ error: '作品标题不能为空' });
   }
+  const eid = event_id || 1;
   execute(
-    'INSERT INTO works (title, description, image_data) VALUES (?, ?, ?)',
-    [title.trim(), (description || '').trim(), image_data || '']
+    'INSERT INTO works (event_id, title, author, description, image_data) VALUES (?, ?, ?, ?, ?)',
+    [eid, title.trim(), (author || '').trim(), (description || '').trim(), image_data || '']
   );
   const lastId = queryOne('SELECT last_insert_rowid() as id');
   res.json({ id: lastId?.id, message: '作品添加成功' });
@@ -118,9 +197,11 @@ app.delete('/api/works/:id', (req, res) => {
   res.json({ message: '作品已删除' });
 });
 
-// 投票（按排名权重计分：第1名=5分 第2名=4分 第3名=3分 第4名=2分 第5名=1分）
+// ─────────── 投票 API ───────────
+
+// 投票
 app.post('/api/vote', (req, res) => {
-  const { work_ids, voter_token } = req.body;
+  const { event_id, work_ids, voter_token } = req.body;
 
   if (!voter_token || !voter_token.trim()) {
     return res.status(400).json({ error: '缺少投票者标识' });
@@ -129,14 +210,19 @@ app.post('/api/vote', (req, res) => {
     return res.status(400).json({ error: '请按排名顺序选择 5 个作品' });
   }
 
-  // 检查是否已投票
-  const existing = queryOne('SELECT COUNT(*) as cnt FROM votes WHERE voter_token = ?', [voter_token.trim()]);
+  const eid = event_id || 1;
+
+  // 检查该活动是否已投票
+  const existing = queryOne(
+    'SELECT COUNT(*) as cnt FROM votes WHERE voter_token = ? AND event_id = ?',
+    [voter_token.trim(), eid]
+  );
   if (existing && existing.cnt > 0) {
-    return res.status(400).json({ error: '您已经投过票了，每个用户只能投票一次' });
+    return res.status(400).json({ error: '您在该活动中已经投过票了' });
   }
 
-  // 检查作品是否存在 + 不能重复
-  const allWorks = queryAll('SELECT id FROM works');
+  // 检查作品是否属于该活动
+  const allWorks = queryAll('SELECT id FROM works WHERE event_id = ?', [eid]);
   const validIds = allWorks.map(w => w.id);
   const uniqueIds = [...new Set(work_ids)];
   if (uniqueIds.length !== 5) {
@@ -148,15 +234,34 @@ app.post('/api/vote', (req, res) => {
     }
   }
 
-  // 按排名权重插入：index 0 = 第1名(rank=1) = 5分，index 4 = 第5名(rank=5) = 1分
   uniqueIds.forEach((wid, i) => {
-    execute('INSERT INTO votes (work_id, voter_token, rank) VALUES (?, ?, ?)', [wid, voter_token.trim(), i + 1]);
+    execute('INSERT INTO votes (work_id, event_id, voter_token, rank) VALUES (?, ?, ?, ?)',
+      [wid, eid, voter_token.trim(), i + 1]);
   });
 
   res.json({ message: '投票成功！感谢您的参与' });
 });
 
-// 检查是否已投票
+// 检查是否已投票（通过活动+token）
+app.get('/api/vote-check', (req, res) => {
+  const { token, event_id } = req.query;
+  if (!token) return res.json({ hasVoted: false });
+  const eid = event_id || 1;
+  const result = queryOne(
+    'SELECT COUNT(*) as cnt FROM votes WHERE voter_token = ? AND event_id = ?',
+    [token, eid]
+  );
+  res.json({ hasVoted: result ? result.cnt > 0 : false });
+});
+
+// 旧端点兼容
+app.get('/api/vote/:token', (req, res) => {
+  const { token } = req.params;
+  if (!token) return res.json({ hasVoted: false });
+  const result = queryOne('SELECT COUNT(*) as cnt FROM votes WHERE voter_token = ?', [token]);
+  res.json({ hasVoted: result ? result.cnt > 0 : false, votes: result ? result.cnt : 0 });
+});
+
 app.get('/api/voter-check', (req, res) => {
   const token = req.query.token;
   if (!token) return res.json({ hasVoted: false });
@@ -164,10 +269,15 @@ app.get('/api/voter-check', (req, res) => {
   res.json({ hasVoted: result ? result.cnt > 0 : false });
 });
 
-// 获取投票结果（按权重计分：rank 1=5分，2=4分，3=3分，4=2分，5=1分）
+// ─────────── 结果 API ───────────
+
+// 获取投票结果（按活动）
 app.get('/api/results', (req, res) => {
+  const eventId = req.query.event_id;
+  const eid = eventId || 1;
+
   const results = queryAll(`
-    SELECT w.id, w.title, w.description, w.image_data,
+    SELECT w.id, w.title, w.author, w.description, w.image_data,
            COALESCE((SELECT SUM(
              CASE v.rank
                WHEN 1 THEN 5
@@ -177,23 +287,41 @@ app.get('/api/results', (req, res) => {
                WHEN 5 THEN 1
                ELSE 0
              END
-           ) FROM votes v WHERE v.work_id = w.id), 0) as score
+           ) FROM votes v WHERE v.work_id = w.id AND v.event_id = ?), 0) as score
     FROM works w
+    WHERE w.event_id = ?
     ORDER BY score DESC, w.id ASC
-  `);
-  const totalVoters = queryOne('SELECT COUNT(DISTINCT voter_token) as cnt FROM votes');
-  res.json({ results, totalVoters: totalVoters?.cnt || 0 });
+  `, [eid, eid]);
+
+  const event = queryOne('SELECT name FROM events WHERE id = ?', [eid]);
+  const totalVoters = queryOne(
+    'SELECT COUNT(DISTINCT voter_token) as cnt FROM votes WHERE event_id = ?',
+    [eid]
+  );
+
+  res.json({
+    event: event || { name: '未命名活动' },
+    results,
+    totalVoters: totalVoters?.cnt || 0
+  });
 });
 
-// 重置所有投票
+// ─────────── 重置 API ───────────
+
+// 重置活动投票
+app.post('/api/reset', (req, res) => {
+  const { event_id } = req.body;
+  const eid = event_id || 1;
+  execute('DELETE FROM votes WHERE event_id = ?', [eid]);
+  res.json({ message: '该活动的投票已重置' });
+});
+
 app.post('/api/reset-votes', (req, res) => {
   execute('DELETE FROM votes');
   res.json({ message: '所有投票已重置' });
 });
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  首页 → 观众投票页面（无管理功能）
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ─────────── 首页 ───────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

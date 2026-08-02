@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: casetify-portfolio
+    runtime: docker
+    region: singapore
+    plan: free
+    dockerfilePath: ./Dockerfile

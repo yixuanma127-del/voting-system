@@ -161,7 +161,63 @@
     .stat-num.green { color: var(--green); }
     .stat-cap { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 8px; font-weight: 500; }
 
-    /* ========== COMPETITOR TABLE ========== */
+    /* ========== PROBLEM-SOLUTION TABLE ========== */
+    .ps-table {
+      width: 100%;
+      margin-top: 32px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .ps-table th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+    }
+    .ps-table td {
+      padding: 24px 20px;
+      vertical-align: top;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .ps-table tr:hover td { background: #faf8f5; }
+    .td-problem { border-right: 1px solid var(--border); }
+    .td-solution { background: #fdfffc; }
+    .ps-table .td-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .ps-table h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+    .ps-table p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+    @media (max-width: 768px) {
+      .ps-table, .ps-table tbody, .ps-table tr, .ps-table td {
+        display: block;
+      }
+      .ps-table thead { display: none; }
+      .td-problem { border-right: none; }
+      .ps-table td { padding: 20px 16px; }
+      .ps-table tr { border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+      .ps-table td { border-bottom: none; padding: 12px 16px; }
+    }
     .comp-table {
       width: 100%;
       margin-top: 32px;
@@ -488,79 +544,80 @@
     </div>
   </section>
 
-  <!-- Problem → Solution Framework -->
+  <!-- Problem → Solution Table -->
   <section id="analysis">
     <div class="sec">
       <p class="sec-label">Diagnosis</p>
       <h2 class="sec-title">Five Problems. Five Solutions.</h2>
       <p class="sec-desc">A systematic audit of Casetify's current marketing mix reveals clear opportunities for improvement.</p>
 
-      <div class="cards-2col">
-        <div class="card">
-          <span class="card-tag tag-problem">Problem</span>
-          <div class="card-icon">📱</div>
-          <h3>Product Line Stagnation</h3>
-          <p>The product range hasn't evolved to meet the growing demand for sustainability. Casetify's core strength — phone cases — needs expansion into complementary accessories with eco-conscious materials.</p>
-        </div>
-        <div class="card">
-          <span class="card-tag tag-solution">Solution</span>
-          <div class="card-icon">♻️</div>
-          <h3>Sustainable Expansion</h3>
-          <p>Introduce biodegradable and recycled-material cases. Expand accessories line: AirPods cases, laptop sleeves, MagSafe wallets — all with the same design-forward DNA that defines Casetify.</p>
-        </div>
-
-        <div class="card">
-          <span class="card-tag tag-problem">Problem</span>
-          <div class="card-icon">⭐</div>
-          <h3>Declining CSAT: 95% → 91%</h3>
-          <p>Customer satisfaction dropped 4 percentage points by February 2024. In the premium segment, service experience directly impacts repurchase intent and word-of-mouth.</p>
-        </div>
-        <div class="card">
-          <span class="card-tag tag-solution">Solution</span>
-          <div class="card-icon">🚀</div>
-          <h3>Target: CSAT ≥ 95%</h3>
-          <p>Implement a proactive customer service model: faster response times, hassle-free returns, and a post-purchase follow-up system. Launch a customer feedback loop integrated into product development.</p>
-        </div>
-
-        <div class="card">
-          <span class="card-tag tag-problem">Problem</span>
-          <div class="card-icon">💵</div>
-          <h3>Price Perception Gap</h3>
-          <p>Premium pricing without clear, communicated value justification creates friction at the point of purchase — especially among price-sensitive Gen Z consumers in growth markets.</p>
-        </div>
-        <div class="card">
-          <span class="card-tag tag-solution">Solution</span>
-          <div class="card-icon">✨</div>
-          <h3>Value-Based Positioning</h3>
-          <p>Instead of discounting, double down on storytelling: the craftsmanship behind each design, artist collaborations, and the quality that justifies the price. Introduce a tiered loyalty program for retention.</p>
-        </div>
-
-        <div class="card">
-          <span class="card-tag tag-problem">Problem</span>
-          <div class="card-icon">🎁</div>
-          <h3>Weak Incentive Structure</h3>
-          <p>Current customer incentives lack depth — no tiered loyalty program, no referral rewards, and limited UGC incentives to turn customers into brand advocates.</p>
-        </div>
-        <div class="card">
-          <span class="card-tag tag-solution">Solution</span>
-          <div class="card-icon">🏆</div>
-          <h3>Layered Reward System</h3>
-          <p>Build a 3-tier loyalty program with escalating benefits. Launch a referral program with discounts for both parties. Create a UGC rewards program where top community creators get featured and earn store credit.</p>
-        </div>
-
-        <div class="card">
-          <span class="card-tag tag-problem">Problem</span>
-          <div class="card-icon">📣</div>
-          <h3>KOL-Heavy, Low Authenticity</h3>
-          <p>Over-reliance on traditional KOL endorsements dilutes authenticity. Audiences, especially Gen Z, increasingly trust peer recommendations over polished influencer content.</p>
-        </div>
-        <div class="card">
-          <span class="card-tag tag-solution">Solution</span>
-          <div class="card-icon">💬</div>
-          <h3>KOC + Story-Driven Content</h3>
-          <p>Shift budget from macro-KOLs to Key Opinion Consumers (KOCs) — real users with genuine influence. Produce behind-the-scenes storytelling content: the ideation process, the artist's sketchbook, the factory floor. Emotion over promotion.</p>
-        </div>
-      </div>
+      <table class="ps-table">
+        <thead>
+          <tr><th>Problem</th><th>Solution</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-problem">
+              <div class="td-tag tag-problem">Problem</div>
+              <h4>📱 Product Line Stagnation</h4>
+              <p>The product range hasn't evolved to meet the growing demand for sustainability. Casetify's core strength — phone cases — needs expansion into complementary accessories with eco-conscious materials.</p>
+            </td>
+            <td class="td-solution">
+              <div class="td-tag tag-solution">Solution</div>
+              <h4>♻️ Sustainable Expansion</h4>
+              <p>Introduce biodegradable and recycled-material cases. Expand accessories line: AirPods cases, laptop sleeves, MagSafe wallets — all with the same design-forward DNA that defines Casetify.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="td-problem">
+              <div class="td-tag tag-problem">Problem</div>
+              <h4>⭐ Declining CSAT: 95% → 91%</h4>
+              <p>Customer satisfaction dropped 4 percentage points by February 2024. In the premium segment, service experience directly impacts repurchase intent and word-of-mouth.</p>
+            </td>
+            <td class="td-solution">
+              <div class="td-tag tag-solution">Solution</div>
+              <h4>🚀 Target: CSAT ≥ 95%</h4>
+              <p>Implement a proactive customer service model: faster response times, hassle-free returns, and a post-purchase follow-up system. Launch a customer feedback loop integrated into product development.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="td-problem">
+              <div class="td-tag tag-problem">Problem</div>
+              <h4>💵 Price Perception Gap</h4>
+              <p>Premium pricing without clear, communicated value justification creates friction at the point of purchase — especially among price-sensitive Gen Z consumers in growth markets.</p>
+            </td>
+            <td class="td-solution">
+              <div class="td-tag tag-solution">Solution</div>
+              <h4>✨ Value-Based Positioning</h4>
+              <p>Instead of discounting, double down on storytelling: the craftsmanship behind each design, artist collaborations, and the quality that justifies the price. Introduce a tiered loyalty program for retention.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="td-problem">
+              <div class="td-tag tag-problem">Problem</div>
+              <h4>🎁 Weak Incentive Structure</h4>
+              <p>Current customer incentives lack depth — no tiered loyalty program, no referral rewards, and limited UGC incentives to turn customers into brand advocates.</p>
+            </td>
+            <td class="td-solution">
+              <div class="td-tag tag-solution">Solution</div>
+              <h4>🏆 Layered Reward System</h4>
+              <p>Build a 3-tier loyalty program with escalating benefits. Launch a referral program with discounts for both parties. Create a UGC rewards program where top community creators get featured and earn store credit.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="td-problem">
+              <div class="td-tag tag-problem">Problem</div>
+              <h4>📣 KOL-Heavy, Low Authenticity</h4>
+              <p>Over-reliance on traditional KOL endorsements dilutes authenticity. Audiences, especially Gen Z, increasingly trust peer recommendations over polished influencer content.</p>
+            </td>
+            <td class="td-solution">
+              <div class="td-tag tag-solution">Solution</div>
+              <h4>💬 KOC + Story-Driven Content</h4>
+              <p>Shift budget from macro-KOLs to Key Opinion Consumers (KOCs) — real users with genuine influence. Produce behind-the-scenes storytelling content: the ideation process, the artist's sketchbook, the factory floor. Emotion over promotion.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 

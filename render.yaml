@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: voting-system
+    name: voting-system-ljyn
     runtime: docker
     region: singapore
     plan: free

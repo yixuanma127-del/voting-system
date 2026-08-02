@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: casetify-portfolio
+    name: voting-system
     runtime: docker
     region: singapore
     plan: free

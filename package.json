@@ -1,12 +1,14 @@
 {
-  "name": "portfolio-casetify",
+  "name": "voting-system",
   "version": "1.0.0",
-  "description": "Casetify China Market Marketing Plan Portfolio",
+  "description": "Rank-based voting system with multi-event support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "sql.js": "^1.10.0",
+    "uuid": "^10.0.0"
   }
 }

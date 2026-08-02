@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>投票系统</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: white; padding: 30px 0 20px; }
+.header h1 { font-size: 32px; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.header p { opacity: 0.85; font-size: 15px; }
+.event-selector { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.event-selector label { font-size: 14px; color: #6b7280; display: block; margin-bottom: 8px; }
+.event-selector select { padding: 8px 16px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 15px; width: 100%; max-width: 300px; background: #f9fafb; }
+.card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.card h3 { font-size: 17px; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.work-item { border: 2px solid #e5e7eb; border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.2s; position: relative; text-align: center; background: #fafafa; }
+.work-item:hover { border-color: #a5b4fc; transform: translateY(-2px); }
+.work-item.selected { border-color: #6366f1; background: #eef2ff; }
+.work-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #e5e7eb; }
+.work-item .title { font-size: 14px; font-weight: 600; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.work-item .author { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.work-item .rank-badge { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; display: none; }
+.work-item.selected .rank-badge { display: flex; }
+.rankings-bar { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.rankings-bar h3 { font-size: 16px; color: #1f2937; margin-bottom: 10px; }
+.rank-slot { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; margin-bottom: 6px; background: #f9fafb; font-size: 14px; }
+.rank-slot:nth-child(2) { background: #ede9fe; }
+.rank-slot .slot-num { font-weight: 700; color: #6366f1; min-width: 24px; font-size: 16px; }
+.rank-slot .slot-name { flex: 1; color: #374151; }
+.rank-slot .slot-pts { color: #6366f1; font-weight: 600; font-size: 13px; }
+.rank-slot.empty .slot-name { color: #d1d5db; font-style: italic; }
+.submit-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-size: 17px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(99,102,241,0.4); transition: all 0.2s; }
+.submit-btn:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
+.submit-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
+.result-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.result-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #f3f4f6; }
+.result-item:last-child { border-bottom: none; }
+.result-rank { font-size: 20px; font-weight: 800; min-width: 36px; }
+.result-info { flex: 1; }
+.result-info .name { font-weight: 600; font-size: 15px; color: #1f2937; }
+.result-info .author { font-size: 13px; color: #9ca3af; }
+.result-score { font-weight: 700; color: #6366f1; font-size: 16px; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 10px; font-size: 14px; z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.toast.error { background: #ef4444; }
+.toast.success { background: #10b981; }
+@media (max-width: 400px) { .works-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } .work-item { padding: 6px; } .work-item .title { font-size: 12px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>投票系统</h1>
+    <p>选出你最喜欢的 5 个作品，按排名计分</p>
+  </div>
+
+  <div class="event-selector" id="eventSelector">
+    <label>选择活动</label>
+    <select id="eventSelect" onchange="switchEvent()"></select>
+  </div>
+
+  <div id="votingSection">
+    <div class="rankings-bar" id="rankingsBar">
+      <h3>你的排名</h3>
+      <div class="rank-slot empty"><span class="slot-num">1</span><span class="slot-name">点击作品选择第一名</span><span class="slot-pts">5 分</span></div>
+      <div class="rank-slot empty"><span class="slot-num">2</span><span class="slot-name">点击作品选择第二名</span><span class="slot-pts">4 分</span></div>
+      <div class="rank-slot empty"><span class="slot-num">3</span><span class="slot-name">点击作品选择第三名</span><span class="slot-pts">3 分</span></div>
+      <div class="rank-slot empty"><span class="slot-num">4</span><span class="slot-name">点击作品选择第四名</span><span class="slot-pts">2 分</span></div>
+      <div class="rank-slot empty"><span class="slot-num">5</span><span class="slot-name">点击作品选择第五名</span><span class="slot-pts">1 分</span></div>
+    </div>
+
+    <div class="card">
+      <h3>作品列表</h3>
+      <div class="works-grid" id="worksGrid"></div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" disabled onclick="submitVote()">提交投票</button>
+  </div>
+
+  <div id="resultSection" style="display:none;">
+    <div class="header"><h1>投票成功</h1><p id="resultEventTitle"></p></div>
+    <div class="result-card">
+      <h3 style="margin-bottom:12px;font-size:16px;">当前排行榜</h3>
+      <div id="resultsList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const POINTS = [5, 4, 3, 2, 1];
+let currentEventId = null;
+let works = [];
+let selected = [null, null, null, null, null]; // work ids, index 0 = 1st place
+let token = null;
+
+function getToken() {
+  let t = localStorage.getItem('vote_token');
+  if (!t) {
+    t = crypto.randomUUID();
+    localStorage.setItem('vote_token', t);
+  }
+  return t;
+}
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.className = 'toast', 2000);
+}
+
+async function loadEvents() {
+  const res = await fetch('/api/events');
+  const events = await res.json();
+  const sel = document.getElementById('eventSelect');
+  sel.innerHTML = events.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  if (events.length > 0) {
+    currentEventId = events[0].id;
+    await initEvent();
+  }
+}
+
+async function switchEvent() {
+  currentEventId = parseInt(document.getElementById('eventSelect').value);
+  await initEvent();
+}
+
+async function initEvent() {
+  if (!currentEventId) return;
+  token = getToken();
+
+  // Check if already voted
+  const checkRes = await fetch(`/api/vote-check?token=${encodeURIComponent(token)}&event_id=${currentEventId}`);
+  const check = await checkRes.json();
+
+  if (check.hasVoted) {
+    document.getElementById('votingSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+    const name = document.getElementById('eventSelect').selectedOptions[0]?.text || '';
+    document.getElementById('resultEventTitle').textContent = `活动: ${name}`;
+    await loadResults();
+    return;
+  }
+
+  document.getElementById('votingSection').style.display = 'block';
+  document.getElementById('resultSection').style.display = 'none';
+
+  // Load works
+  const res = await fetch(`/api/works?event_id=${currentEventId}`);
+  works = await res.json();
+  selected = [null, null, null, null, null];
+  renderWorks();
+  renderRankings();
+  updateSubmitBtn();
+}
+
+function renderWorks() {
+  document.getElementById('worksGrid').innerHTML = works.map(w => {
+    const idx = selected.indexOf(w.id);
+    const selClass = idx !== -1 ? ' selected' : '';
+    const badge = idx !== -1 ? `<div class="rank-badge" style="display:flex;">${idx + 1}</div>` : '';
+    const imgHtml = w.image_data
+      ? `<img src="${w.image_data}" alt="${w.title}">`
+      : `<div style="width:100%;aspect-ratio:1;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;">🏆</div>`;
+    return `<div class="work-item${selClass}" onclick="toggleWork(${w.id})">${badge}${imgHtml}<div class="title">${w.title}</div><div class="author">${w.author || ''}</div></div>`;
+  }).join('');
+}
+
+function renderRankings() {
+  const slotDiv = document.getElementById('rankingsBar');
+  let html = '<h3>你的排名</h3>';
+  selected.forEach((wid, i) => {
+    const w = wid ? works.find(w => w.id === wid) : null;
+    const name = w ? w.title : `点击作品选择第${['一','二','三','四','五'][i]}名`;
+    html += `<div class="rank-slot${w ? '' : ' empty'}"><span class="slot-num">${i + 1}</span><span class="slot-name">${name}</span><span class="slot-pts">${POINTS[i]} 分</span></div>`;
+  });
+  slotDiv.innerHTML = html;
+}
+
+function toggleWork(wid) {
+  const idx = selected.indexOf(wid);
+  if (idx !== -1) {
+    // Already selected - remove it and shift up
+    selected.splice(idx, 1);
+    selected.push(null);
+  } else {
+    // Not selected - find first empty slot
+    const emptyIdx = selected.indexOf(null);
+    if (emptyIdx === -1) {
+      // All full - remove last and prepend
+      selected.pop();
+      selected.unshift(wid);
+    } else {
+      selected[emptyIdx] = wid;
+    }
+  }
+  renderWorks();
+  renderRankings();
+  updateSubmitBtn();
+}
+
+function updateSubmitBtn() {
+  const allFilled = selected.every(s => s !== null);
+  document.getElementById('submitBtn').disabled = !allFilled;
+}
+
+async function submitVote() {
+  const result = await fetch('/api/vote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event_id: currentEventId,
+      work_ids: selected,
+      voter_token: token
+    })
+  });
+  const data = await result.json();
+  if (result.ok) {
+    toast(data.message, 'success');
+    document.getElementById('votingSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+    const name = document.getElementById('eventSelect').selectedOptions[0]?.text || '';
+    document.getElementById('resultEventTitle').textContent = `活动: ${name}`;
+    await loadResults();
+  } else {
+    toast(data.error, 'error');
+  }
+}
+
+async function loadResults() {
+  const res = await fetch(`/api/results?event_id=${currentEventId}`);
+  const data = await res.json();
+  const emojis = ['🥇','🥈','🥉','4','5','6','7','8','9','10'];
+  document.getElementById('resultsList').innerHTML = data.results.slice(0, 10).map((r, i) => `
+    <div class="result-item">
+      <span class="result-rank">${emojis[i] || (i + 1)}</span>
+      <div class="result-info"><div class="name">${r.title}</div><div class="author">${r.author || ''}</div></div>
+      <span class="result-score">${r.score} 分</span>
+    </div>
+  `).join('');
+}
+
+loadEvents();
+</script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投票系统管理后台</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; }
+.header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 22px; }
+.nav { display: flex; gap: 10px; background: white; padding: 0 30px; border-bottom: 1px solid #e5e7eb; }
+.nav-btn { padding: 14px 20px; border: none; background: none; cursor: pointer; font-size: 15px; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.nav-btn:hover { color: #6366f1; }
+.nav-btn.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 600; }
+.content { padding: 30px; max-width: 1400px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.card h3 { font-size: 18px; margin-bottom: 16px; color: #1f2937; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 14px; color: #4b5563; margin-bottom: 6px; font-weight: 500; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+.btn-primary { background: #6366f1; color: white; }
+.btn-primary:hover { background: #4f46e5; }
+.btn-danger { background: #ef4444; color: white; }
+.btn-danger:hover { background: #dc2626; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+.work-card { background: #f9fafb; border-radius: 10px; padding: 16px; border: 1px solid #e5e7eb; }
+.work-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; background: #e5e7eb; }
+.work-card h4 { font-size: 16px; margin-bottom: 4px; }
+.work-card .author { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
+.work-card .actions { display: flex; gap: 8px; margin-top: 10px; }
+.results-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.results-table th, .results-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.results-table th { background: #f9fafb; font-weight: 600; color: #4b5563; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+.rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; font-weight: 700; font-size: 14px; }
+.rank-1 { background: #fbbf24; color: #92400e; }
+.rank-2 { background: #cbd5e1; color: #475569; }
+.rank-3 { background: #fcd34d; color: #78350f; }
+.rank-other { background: #e5e7eb; color: #6b7280; }
+.empty-state { text-align: center; padding: 40px; color: #9ca3af; grid-column: 1/-1; }
+.award-screen { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #1e1b4b, #312e81, #3730a3); color: white; min-height: 100vh; display: none; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; overflow-y: auto; }
+.award-screen.active { display: block; }
+.award-screen h1 { font-size: 48px; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+.award-screen .subtitle { font-size: 20px; opacity: 0.8; margin-bottom: 40px; }
+.award-rankings { display: flex; justify-content: center; align-items: flex-end; gap: 24px; margin: 40px 0; flex-wrap: wrap; }
+.award-item { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 24px; min-width: 200px; border: 1px solid rgba(255,255,255,0.2); }
+.award-item.first { background: linear-gradient(135deg, rgba(251,191,36,0.3), rgba(245,158,11,0.3)); min-width: 240px; padding: 32px; transform: scale(1.05); }
+.award-rank { font-size: 42px; font-weight: 800; margin-bottom: 8px; }
+.award-title { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+.award-score { font-size: 18px; opacity: 0.9; }
+.close-award { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; z-index: 1001; }
+@media (max-width: 600px) { .content { padding: 16px; } .header { padding: 16px; } .nav { padding: 0 12px; overflow-x: auto; } .nav-btn { padding: 12px 14px; font-size: 13px; white-space: nowrap; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>投票系统管理后台</h1>
+  <span style="opacity:0.8;font-size:14px;" id="headerEvent"></span>
+</div>
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('events')">活动管理</button>
+  <button class="nav-btn" onclick="switchTab('works')">作品管理</button>
+  <button class="nav-btn" onclick="switchTab('results')">实时结果</button>
+  <button class="nav-btn" onclick="switchTab('award')">颁奖大屏</button>
+</div>
+<div class="content">
+  <!-- 活动管理 -->
+  <div id="tab-events" class="tab-content active">
+    <div class="card">
+      <h3>创建新活动</h3>
+      <div class="form-group">
+        <label>活动名称</label>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="eventName" placeholder="输入活动名称" style="flex:1;max-width:400px;">
+          <button class="btn btn-primary" onclick="createEvent()">创建活动</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>活动列表</h3>
+      <div id="eventsList"></div>
+    </div>
+  </div>
+
+  <!-- 作品管理 -->
+  <div id="tab-works" class="tab-content">
+    <div class="card">
+      <h3>添加作品</h3>
+      <div class="form-group">
+        <label>所属活动</label>
+        <select id="workEventId"></select>
+      </div>
+      <div class="form-group">
+        <label>作品标题 *</label>
+        <input type="text" id="workTitle" placeholder="输入作品标题">
+      </div>
+      <div class="form-group">
+        <label>作者/参赛者</label>
+        <input type="text" id="workAuthor" placeholder="输入作者名">
+      </div>
+      <div class="form-group">
+        <label>描述</label>
+        <textarea id="workDesc" placeholder="作品描述"></textarea>
+      </div>
+      <div class="form-group">
+        <label>图片</label>
+        <input type="file" id="workImage" accept="image/*" onchange="previewImage(event)">
+        <img id="imagePreview" style="max-width:300px;max-height:200px;margin-top:10px;border-radius:8px;display:none;">
+      </div>
+      <button class="btn btn-primary" onclick="addWork()">添加作品</button>
+    </div>
+    <div class="card">
+      <h3>作品列表</h3>
+      <select id="filterEvent" onchange="loadWorks()" style="margin-bottom:12px;padding:8px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;"></select>
+      <div id="worksList" class="works-grid"></div>
+    </div>
+  </div>
+
+  <!-- 实时结果 -->
+  <div id="tab-results" class="tab-content">
+    <div class="card">
+      <h3>投票结果</h3>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+        <select id="resultEventId" onchange="loadResults()" style="padding:8px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;"></select>
+        <button class="btn btn-sm btn-danger" onclick="resetVotes()">重置投票</button>
+        <span style="margin-left:auto;font-size:14px;color:#6b7280;" id="totalVoters"></span>
+      </div>
+      <table class="results-table" id="resultsTable">
+        <thead><tr><th>排名</th><th>作品</th><th>作者</th><th>积分</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 颁奖大屏 -->
+  <div id="tab-award" class="tab-content">
+    <div class="card" style="text-align:center;">
+      <h3>颁奖大屏</h3>
+      <p style="color:#6b7280;margin:10px 0;">适合投影到大屏幕展示颁奖结果</p>
+      <div class="form-group">
+        <select id="awardEventId" style="padding:8px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;max-width:300px;"></select>
+      </div>
+      <button class="btn btn-primary" onclick="showAward()">开启颁奖大屏</button>
+    </div>
+  </div>
+</div>
+
+<!-- 颁奖大屏全屏 -->
+<div class="award-screen" id="awardScreen">
+  <button class="close-award" onclick="closeAward()">✕</button>
+  <h1 id="awardEventName"></h1>
+  <p class="subtitle">投票结果</p>
+  <div class="award-rankings" id="awardRankings"></div>
+  <p style="opacity:0.6;margin-top:20px;" id="awardVoters"></p>
+</div>
+
+<script>
+let currentEventId = null;
+let events = [];
+
+async function loadEvents() {
+  const res = await fetch('/api/events');
+  events = await res.json();
+  renderAllSelects();
+  if (events.length > 0 && !currentEventId) currentEventId = events[0].id;
+  updateHeader();
+}
+
+function renderAllSelects() {
+  ['workEventId','filterEvent','resultEventId','awardEventId'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = events.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+    if (currentEventId && events.find(e => e.id == currentEventId)) sel.value = currentEventId;
+  });
+  document.getElementById('eventsList').innerHTML = events.length === 0
+    ? '<div class="empty-state">暂无活动</div>'
+    : events.map(e => `<div class="work-card" style="display:flex;justify-content:space-between;align-items:center;"><div><h4>${e.name}</h4><span style="color:#9ca3af;font-size:12px;">${e.created_at || ''}</span></div><button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.id})">删除</button></div>`).join('');
+}
+
+function updateHeader() {
+  document.getElementById('headerEvent').textContent = events.find(e => e.id == currentEventId)?.name || '';
+}
+
+async function createEvent() {
+  const name = document.getElementById('eventName').value.trim();
+  if (!name) return alert('请输入活动名称');
+  await fetch('/api/events', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name}) });
+  document.getElementById('eventName').value = '';
+  await loadEvents();
+}
+
+async function deleteEvent(id) {
+  if (!confirm('确定删除此活动？作品和投票也会一并删除！')) return;
+  await fetch(`/api/events/${id}`, { method:'DELETE' });
+  if (currentEventId == id) currentEventId = events.find(e => e.id != id)?.id || null;
+  await loadEvents();
+}
+
+let imageBase64 = '';
+function previewImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    imageBase64 = ev.target.result;
+    const img = document.getElementById('imagePreview');
+    img.src = imageBase64;
+    img.style.display = 'block';
+  };
+  rd.readAsDataURL(file);
+}
+
+async function addWork() {
+  const title = document.getElementById('workTitle').value.trim();
+  if (!title) return alert('请输入作品标题');
+  const event_id = parseInt(document.getElementById('workEventId').value) || 1;
+  const author = document.getElementById('workAuthor').value.trim();
+  const desc = document.getElementById('workDesc').value.trim();
+  await fetch('/api/works', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_id, title, author, description:desc, image_data:imageBase64}) });
+  ['workTitle','workAuthor','workDesc'].forEach(id => document.getElementById(id).value = '');
+  imageBase64 = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('workImage').value = '';
+  await loadWorks();
+}
+
+async function loadWorks() {
+  const eid = document.getElementById('filterEvent').value || currentEventId;
+  const res = await fetch(`/api/works?event_id=${eid}`);
+  const works = await res.json();
+  document.getElementById('worksList').innerHTML = works.length === 0
+    ? '<div class="empty-state">该活动暂无作品</div>'
+    : works.map(w => `<div class="work-card">${w.image_data ? `<img src="${w.image_data}" alt="${w.title}">` : '<div style="width:100%;height:160px;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;">暂无图片</div>'}<h4>${w.title}</h4><div class="author">${w.author || '—'}</div><p style="font-size:13px;color:#6b7280;">${w.description || ''}</p><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWork(${w.id})">删除</button></div></div>`).join('');
+}
+
+async function deleteWork(id) {
+  if (!confirm('确定删除？')) return;
+  await fetch(`/api/works/${id}`, { method:'DELETE' });
+  await loadWorks();
+}
+
+async function loadResults() {
+  const eid = document.getElementById('resultEventId').value || currentEventId;
+  const res = await fetch(`/api/results?event_id=${eid}`);
+  const data = await res.json();
+  document.getElementById('totalVoters').textContent = `总投票人数: ${data.totalVoters}`;
+  document.querySelector('#resultsTable tbody').innerHTML = data.results.map((r, i) => {
+    let cls = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+    return `<tr><td><span class="rank-badge ${cls}">${i+1}</span></td><td><strong>${r.title}</strong></td><td>${r.author || '—'}</td><td style="font-weight:700;color:#6366f1;">${r.score} 分</td></tr>`;
+  }).join('');
+}
+
+async function resetVotes() {
+  if (!confirm('确定重置该活动的所有投票？不可恢复！')) return;
+  const eid = document.getElementById('resultEventId').value || currentEventId;
+  await fetch('/api/reset', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_id:parseInt(eid)}) });
+  await loadResults();
+}
+
+async function showAward() {
+  const eid = document.getElementById('awardEventId').value || currentEventId;
+  const res = await fetch(`/api/results?event_id=${eid}`);
+  const data = await res.json();
+  document.getElementById('awardEventName').textContent = data.event.name;
+  document.getElementById('awardVoters').textContent = `参与人数: ${data.totalVoters}`;
+  const top3 = data.results.slice(0, 3);
+  document.getElementById('awardRankings').innerHTML = top3.map((r, i) => {
+    const cls = ['second','first','third'][i];
+    const emoji = ['🥈','🥇','🥉'][i];
+    return `<div class="award-item ${cls}"><div class="award-rank">${emoji}</div><div class="award-title">${r.title}</div><div class="award-score">${r.author || ''}</div><div style="font-size:28px;font-weight:700;margin-top:10px;">${r.score} 分</div></div>`;
+  }).join('');
+  document.getElementById('awardScreen').classList.add('active');
+}
+
+function closeAward() { document.getElementById('awardScreen').classList.remove('active'); }
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-content,.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn')[['events','works','results','award'].indexOf(name)].classList.add('active');
+  if (name === 'works') loadWorks();
+  if (name === 'results') loadResults();
+}
+
+loadEvents();
+</script>
+</body>
+</html>

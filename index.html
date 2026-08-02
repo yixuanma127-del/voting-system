@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casetify 中国市场营销计划 — 作品集</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #1a1a1a;
+      background: #fafafa;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 40%, #16213e 100%);
+      color: #fff;
+      padding: 120px 40px 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 70%, rgba(255,107,107,0.12) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 30%, rgba(78,205,196,0.10) 0%, transparent 50%);
+      animation: heroGlow 12s ease-in-out infinite alternate;
+    }
+    @keyframes heroGlow {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(20px, -20px) rotate(5deg); }
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+    .hero-pretitle {
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 7vw, 72px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .hero h1 span { 
+      background: linear-gradient(135deg, #FF6B6B, #FFA07A);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-subtitle {
+      font-size: 18px;
+      color: rgba(255,255,255,0.6);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      font-weight: 400;
+    }
+    .hero-cta {
+      display: inline-flex;
+      gap: 12px;
+      padding: 14px 36px;
+      background: #fff;
+      color: #0a0a0a;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+    .hero-scroll {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 2s infinite;
+      color: rgba(255,255,255,0.3);
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, 10px); }
+    }
+
+    /* Section Layout */
+    section { padding: 100px 40px; }
+    .section-inner { max-width: 960px; margin: 0 auto; }
+    .section-label {
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #FF6B6B;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .section-title {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      margin-bottom: 24px;
+    }
+    .section-desc {
+      font-size: 16px;
+      color: #666;
+      max-width: 640px;
+      margin-bottom: 48px;
+    }
+
+    /* Summary */
+    .summary-section { background: #fff; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .summary-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 16px;
+      padding: 32px;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .summary-card:hover { box-shadow: 0 8px 40px rgba(0,0,0,0.06); transform: translateY(-2px); }
+    .summary-card .card-icon { font-size: 32px; margin-bottom: 16px; }
+    .summary-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .summary-card p { font-size: 14px; color: #888; line-height: 1.6; }
+
+    /* Stats */
+    .stats-section { background: #0a0a0a; color: #fff; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      margin-top: 48px;
+      text-align: center;
+    }
+    .stat-item .stat-number {
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #FF6B6B, #FFA07A);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-item .stat-label { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+
+    /* Analysis */
+    .analysis-section { background: #fafafa; }
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 32px;
+      margin-top: 40px;
+    }
+    .analysis-block {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px;
+      border: 1px solid #eee;
+    }
+    .analysis-block h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #FF6B6B;
+      display: inline-block;
+    }
+    .analysis-block ul {
+      list-style: none;
+      padding: 0;
+    }
+    .analysis-block li {
+      padding: 10px 0;
+      padding-left: 24px;
+      position: relative;
+      font-size: 15px;
+      color: #555;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .analysis-block li:last-child { border-bottom: none; }
+    .analysis-block li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #FF6B6B;
+      font-weight: 600;
+    }
+
+    /* Products */
+    .products-section { background: #fff; }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin-top: 48px;
+    }
+    .product-card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: #fafafa;
+      border: 1px solid #eee;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 48px rgba(0,0,0,0.08); }
+    .product-card img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      display: block;
+    }
+    .product-card .product-info { padding: 24px; }
+    .product-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .product-card .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255,107,107,0.1);
+      color: #FF6B6B;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .product-card p { font-size: 14px; color: #888; }
+
+    /* Tactics - 5Ps */
+    .tactics-section { background: #fafafa; }
+    .tactics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .tactic-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid #eee;
+      transition: border-color 0.3s;
+    }
+    .tactic-card:hover { border-color: #FF6B6B; }
+    .tactic-card .tactic-letter {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #FF6B6B, #FFA07A);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .tactic-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+    .tactic-card p { font-size: 14px; color: #888; line-height: 1.7; }
+
+    /* Videos */
+    .videos-section { background: #0a0a0a; color: #fff; }
+    .videos-section .section-label { color: #FF6B6B; }
+    .videos-section .section-desc { color: rgba(255,255,255,0.5); }
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 32px;
+      margin-top: 48px;
+    }
+    .video-card { border-radius: 16px; overflow: hidden; background: #111; }
+    .video-card video { width: 100%; display: block; }
+    .video-card .video-info { padding: 20px 24px; }
+    .video-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .video-card p { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+    /* KPI */
+    .kpi-section { background: #fff; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    .kpi-card {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+    }
+    .kpi-card .kpi-value {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+    .kpi-card .kpi-label { font-size: 13px; color: #888; font-weight: 500; }
+    .kpi-card .kpi-detail { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+    /* Implementation */
+    .implement-section { background: #fafafa; }
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      margin-top: 40px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #FF6B6B, #FFA07A, transparent);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 36px;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -36px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #FF6B6B;
+    }
+    .timeline-item h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #FF6B6B; }
+    .timeline-item p { font-size: 14px; color: #888; }
+
+    /* Footer */
+    footer {
+      background: #0a0a0a;
+      color: rgba(255,255,255,0.4);
+      padding: 60px 40px;
+      text-align: center;
+      font-size: 13px;
+    }
+    footer a { color: #FF6B6B; text-decoration: none; }
+    footer .footer-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    /* Download Button */
+    .download-section { text-align: center; padding: 80px 40px; background: linear-gradient(135deg, #0a0a0a, #1a1a2e); }
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 40px;
+      background: #FF6B6B;
+      color: #fff;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .download-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,107,107,0.3); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      section { padding: 60px 24px; }
+      .hero { padding: 80px 24px 60px; }
+      .analysis-grid, .product-grid, .tactics-grid, .video-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-content">
+      <p class="hero-pretitle">Marketing Strategy Portfolio</p>
+      <h1>Casetify <span>中国市场</span>营销计划</h1>
+      <p class="hero-subtitle">
+        为全球潮流科技配件品牌 Casetify 量身打造的全面市场营销策略 — 涵盖市场分析、目标受众定位、5Ps 策略、创意广告与 KPI 体系
+      </p>
+      <a href="#products" class="hero-cta">查看作品 ↓</a>
+    </div>
+  </header>
+
+  <!-- Executive Summary -->
+  <section class="summary-section" id="about">
+    <div class="section-inner">
+      <p class="section-label">Executive Summary</p>
+      <h2 class="section-title">项目概述</h2>
+      <p class="section-desc">
+        本项目为 Casetify 进入中国市场的全面营销方案 — 从市场分析到受众定义，从产品策略到创意执行，从渠道规划到内容营销，构建了完整的品牌增长路径。
+      </p>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="card-icon">🎯</div>
+          <h3>品牌定位</h3>
+          <p>将 Casetify 定位为中国年轻消费者的潮流科技配件首选品牌，强调个性化表达与潮流文化连接。</p>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">📊</div>
+          <h3>市场分析</h3>
+          <p>深度分析中国手机壳市场规模、竞争格局、消费者行为，识别市场机会与增长驱动因素。</p>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">🎨</div>
+          <h3>创意执行</h3>
+          <p>产出三款原创手机壳设计，覆盖不同风格偏好人群，搭配完整的广告创意方案。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Market Stats -->
+  <section class="stats-section">
+    <div class="section-inner">
+      <p class="section-label" style="color:#FF6B6B;">Market Opportunity</p>
+      <h2 class="section-title">中国市场关键数据</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">1,500亿+</div>
+          <div class="stat-label">中国手机壳市场规模（元）</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">10亿+</div>
+          <div class="stat-label">全球 iPhone 活跃用户</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">Z世代</div>
+          <div class="stat-label">核心目标受众，追求个性化自我表达</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">¥200-600</div>
+          <div class="stat-label">目标价格区间，匹配中高端定位</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Market Analysis -->
+  <section class="analysis-section">
+    <div class="section-inner">
+      <p class="section-label">Market Analysis</p>
+      <h2 class="section-title">深度市场洞察</h2>
+      <p class="section-desc">从宏观环境到竞争格局，全面分析 Casetify 在中国市场的机遇与挑战。</p>
+      <div class="analysis-grid">
+        <div class="analysis-block">
+          <h3>宏观环境 (PEST)</h3>
+          <ul>
+            <li><strong>政治：</strong>中国政府鼓励消费升级与创意产业发展</li>
+            <li><strong>经济：</strong>中国为全球最大智能手机市场，消费力持续增长</li>
+            <li><strong>社会：</strong>Z世代注重个性表达和社交货币价值</li>
+            <li><strong>技术：</strong>定制化生产技术成熟，支持规模化个性化生产</li>
+          </ul>
+        </div>
+        <div class="analysis-block">
+          <h3>竞争格局</h3>
+          <ul>
+            <li><strong>高端市场：</strong>品牌差异化是关键竞争壁垒</li>
+            <li><strong>大众市场：</strong>价格战激烈，需以品牌力突围</li>
+            <li><strong>本土品牌：</strong>具备渠道优势，但品牌力较弱</li>
+            <li><strong>国际品牌：</strong>Casetify 具备全球声誉和设计优势</li>
+          </ul>
+        </div>
+        <div class="analysis-block">
+          <h3>目标受众</h3>
+          <ul>
+            <li><strong>核心用户：</strong>18-30 岁一线城市潮流消费者</li>
+            <li><strong>消费心理：</strong>追求独特性、社交展示欲强</li>
+            <li><strong>媒介习惯：</strong>活跃于小红书、抖音、微信</li>
+            <li><strong>购买决策：</strong>受KOL推荐和社交口碑影响大</li>
+          </ul>
+        </div>
+        <div class="analysis-block">
+          <h3>SWOT 分析</h3>
+          <ul>
+            <li><strong>优势：</strong>全球品牌声誉、联名合作资源丰富</li>
+            <li><strong>劣势：</strong>价格偏高、本地化程度不足</li>
+            <li><strong>机会：</strong>中国潮玩市场爆发式增长</li>
+            <li><strong>威胁：</strong>本土品牌快速崛起、仿品问题</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Designs -->
+  <section class="products-section" id="products">
+    <div class="section-inner">
+      <p class="section-label">Product Design</p>
+      <h2 class="section-title">原创手机壳设计</h2>
+      <p class="section-desc">三款不同风格的手机壳设计方案，覆盖 Z 世代多元审美需求。</p>
+      <div class="product-grid">
+        <div class="product-card">
+          <img src="1-警示贴纸款.png" alt="警示贴纸款手机壳">
+          <div class="product-info">
+            <span class="tag">街头潮流</span>
+            <h3>警示贴纸款</h3>
+            <p>灵感来自工业警示标识，融合街头文化与机能美学，打造硬核潮流单品。</p>
+          </div>
+        </div>
+        <div class="product-card">
+          <img src="2-手绘花花款.png" alt="手绘花花款手机壳">
+          <div class="product-info">
+            <span class="tag">清新文艺</span>
+            <h3>手绘花花款</h3>
+            <p>手绘风格花卉图案，温暖治愈的视觉表达，吸引文艺女性消费者。</p>
+          </div>
+        </div>
+        <div class="product-card">
+          <img src="3-甜心镜面款.png" alt="甜心镜面款手机壳">
+          <div class="product-info">
+            <span class="tag">梦幻未来</span>
+            <h3>甜心镜面款</h3>
+            <p>镜面材质融合甜美渐变色彩，兼具实用性与视觉冲击力，Y2K 美学回归。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5Ps Tactics -->
+  <section class="tactics-section">
+    <div class="section-inner">
+      <p class="section-label">Marketing Mix</p>
+      <h2 class="section-title">5Ps 营销策略</h2>
+      <p class="section-desc">完整的 5Ps 策略框架 — 从产品到渠道，从定价到传播，构建系统化营销体系。</p>
+      <div class="tactics-grid">
+        <div class="tactic-card">
+          <div class="tactic-letter">P</div>
+          <h3>产品 (Product)</h3>
+          <p>高端定制化手机壳 + 联名限量系列，支持用户参与设计共创，打造独特产品矩阵。MagSafe 兼容，环保材料理念。</p>
+        </div>
+        <div class="tactic-card">
+          <div class="tactic-letter">P</div>
+          <h3>价格 (Price)</h3>
+          <p>¥200-600 中高端定价，通过联名限量款拉升品牌溢价。首单优惠和会员体系提升复购率，锚定品质消费者。</p>
+        </div>
+        <div class="tactic-card">
+          <div class="tactic-letter">P</div>
+          <h3>渠道 (Place)</h3>
+          <p>天猫旗舰店 + 微信小程序 + 抖音商城 + 小红书店铺 + 线下快闪店。全渠道 DTC 模式直接触达消费者。</p>
+        </div>
+        <div class="tactic-card">
+          <div class="tactic-letter">P</div>
+          <h3>推广 (Promotion)</h3>
+          <p>KOL/KOC 种草 + 短视频内容 + 联名 IP 合作 + UGC 激励计划。小红书、抖音为内容主阵地，制造社交话题。</p>
+        </div>
+        <div class="tactic-card">
+          <div class="tactic-letter">P</div>
+          <h3>人 (People)</h3>
+          <p>建立本地化营销团队，与潮流艺术家、设计师深度合作。打造品牌社群，培养超级用户和品牌大使。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Videos -->
+  <section class="videos-section" id="videos">
+    <div class="section-inner">
+      <p class="section-label">Creative Work</p>
+      <h2 class="section-title">广告创意视频</h2>
+      <p class="section-desc">两支广告视频展现 Casetify 品牌调性与产品魅力。</p>
+      <div class="video-grid">
+        <div class="video-card">
+          <video controls preload="metadata" poster="">
+            <source src="Casetify Sticker Club Ad.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+          </video>
+          <div class="video-info">
+            <h3>Casetify Sticker Club Ad</h3>
+            <p>贴纸俱乐部广告 · 年轻潮流社群感</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <video controls preload="metadata" poster="">
+            <source src="GD Ad V1 Street.mp4" type="video/mp4">
+            您的浏览器不支持视频播放。
+          </video>
+          <div class="video-info">
+            <h3>GD Street Ad V1</h3>
+            <p>街头风格广告 · 潮流视觉效果</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPIs -->
+  <section class="kpi-section">
+    <div class="section-inner">
+      <p class="section-label">Success Metrics</p>
+      <h2 class="section-title">KPI 指标体系</h2>
+      <p class="section-desc">量化的成功衡量标准，确保营销策略可追踪、可优化。</p>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#FF6B6B;">30%</div>
+          <div class="kpi-label">品牌知名度提升</div>
+          <div class="kpi-detail">目标市场内品牌认知率增长</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#4ECDC4;">¥500万</div>
+          <div class="kpi-label">首年 GMV 目标</div>
+          <div class="kpi-detail">全渠道销售额目标</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#FFA07A;">50万+</div>
+          <div class="kpi-label">社交媒体粉丝</div>
+          <div class="kpi-detail">全平台账号粉丝增长</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" style="color:#FF6B6B;">4.5+</div>
+          <div class="kpi-label">产品评分</div>
+          <div class="kpi-detail">电商平台用户评分 (满分5)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Implementation Plan -->
+  <section class="implement-section">
+    <div class="section-inner">
+      <p class="section-label">Action Plan</p>
+      <h2 class="section-title">执行规划</h2>
+      <p class="section-desc">三阶段渐进式市场进入策略，确保稳健落地。</p>
+      <div class="timeline">
+        <div class="timeline-item">
+          <h4>第一阶段 — 品牌预热期 (1-3月)</h4>
+          <p>建立社交账号矩阵，签约首批 KOL，发布 teaser 内容，搭建电商基础，预热联名合作官宣。</p>
+        </div>
+        <div class="timeline-item">
+          <h4>第二阶段 — 正式发布期 (4-6月)</h4>
+          <p>线上商城正式开业，首发联名限量款，达人集中种草，线下快闪店活动，媒体发布会。</p>
+        </div>
+        <div class="timeline-item">
+          <h4>第三阶段 — 持续增长期 (7-12月)</h4>
+          <p>UGC 激励活动常态化，季度联名更新，会员体系上线，数据驱动精细化运营，探索线下零售合作。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section class="download-section">
+    <a href="Casetify营销计划.pptx" class="download-btn" download>
+      📥 下载完整营销计划 PPT
+    </a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p class="footer-title">Casetify 中国市场营销计划 Portfolio</p>
+    <p>© 2025 Marketing Strategy Portfolio. Built for recruiter review.</p>
+  </footer>
+
+</body>
+</html>

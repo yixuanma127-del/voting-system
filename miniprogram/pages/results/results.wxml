@@ -1,0 +1,76 @@
+﻿<view class="page">
+  <!-- 定时刷新提示 -->
+  <view class="refresh-bar">
+    <text>{{autoRefresh ? '🔄 每5秒自动刷新' : '📋 实时结果'}}</text>
+    <switch checked="{{autoRefresh}}" bindchange="toggleAutoRefresh" color="#c62828" />
+  </view>
+
+  <!-- 前三名领奖台 -->
+  <view class="podium" wx:if="{{results.length >= 3}}">
+    <view class="podium-row">
+      <!-- 第2名 -->
+      <view class="podium-item second" wx:if="{{results[1]}}">
+        <text class="podium-rank">🥈</text>
+        <image class="podium-img" src="{{results[1].image_data}}" mode="aspectFill" />
+        <text class="podium-name">{{results[1].title}}</text>
+        <text class="podium-score">{{results[1].score}} 票</text>
+        <view class="podium-bar silver"></view>
+      </view>
+      <!-- 第1名 -->
+      <view class="podium-item first" wx:if="{{results[0]}}">
+        <text class="podium-rank">🥇</text>
+        <image class="podium-img crown" src="{{results[0].image_data}}" mode="aspectFill" />
+        <text class="podium-name">{{results[0].title}}</text>
+        <text class="podium-score">{{results[0].score}} 票</text>
+        <view class="podium-bar gold"></view>
+      </view>
+      <!-- 第3名 -->
+      <view class="podium-item third" wx:if="{{results[2]}}">
+        <text class="podium-rank">🥉</text>
+        <image class="podium-img" src="{{results[2].image_data}}" mode="aspectFill" />
+        <text class="podium-name">{{results[2].title}}</text>
+        <text class="podium-score">{{results[2].score}} 票</text>
+        <view class="podium-bar bronze"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 条形图榜单 -->
+  <view class="rank-list">
+    <view 
+      wx:for="{{results}}" 
+      wx:key="id"
+      class="rank-item"
+      data-order="{{index}}"
+    >
+      <view class="rank-index">
+        <text class="rank-num {{index < 3 ? 'top' : ''}}">{{index + 1}}</text>
+      </view>
+      <image class="rank-img" src="{{item.image_data}}" mode="aspectFill" />
+      <view class="rank-info">
+        <text class="rank-title">{{item.title}}</text>
+        <text class="rank-author" wx:if="{{item.author}}">{{item.author}}</text>
+      </view>
+      <view class="rank-bar-wrap">
+        <view 
+          class="rank-bar" 
+          style="width: {{maxScore > 0 ? (item.score / maxScore * 100) : 0}}%"
+        ></view>
+      </view>
+      <text class="rank-score">{{item.score}}票</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && results.length === 0}}">
+    <text class="icon">📊</text>
+    <text>暂无投票数据</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-wrap" wx:if="{{loading}}">
+    <text class="icon">⏳</text>
+    <text>加载中...</text>
+  </view>
+</view>
+

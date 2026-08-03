@@ -1,252 +1,396 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>投票系统</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-.container { max-width: 700px; margin: 0 auto; }
-.header { text-align: center; color: white; padding: 30px 0 20px; }
-.header h1 { font-size: 32px; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-.header p { opacity: 0.85; font-size: 15px; }
-.event-selector { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-.event-selector label { font-size: 14px; color: #6b7280; display: block; margin-bottom: 8px; }
-.event-selector select { padding: 8px 16px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 15px; width: 100%; max-width: 300px; background: #f9fafb; }
-.card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.card h3 { font-size: 17px; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.works-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-.work-item { border: 2px solid #e5e7eb; border-radius: 12px; padding: 10px; cursor: pointer; transition: all 0.2s; position: relative; text-align: center; background: #fafafa; }
-.work-item:hover { border-color: #a5b4fc; transform: translateY(-2px); }
-.work-item.selected { border-color: #6366f1; background: #eef2ff; }
-.work-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #e5e7eb; }
-.work-item .title { font-size: 14px; font-weight: 600; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.work-item .author { font-size: 12px; color: #9ca3af; margin-top: 2px; }
-.work-item .rank-badge { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; display: none; }
-.work-item.selected .rank-badge { display: flex; }
-.rankings-bar { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.rankings-bar h3 { font-size: 16px; color: #1f2937; margin-bottom: 10px; }
-.rank-slot { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; margin-bottom: 6px; background: #f9fafb; font-size: 14px; }
-.rank-slot:nth-child(2) { background: #ede9fe; }
-.rank-slot .slot-num { font-weight: 700; color: #6366f1; min-width: 24px; font-size: 16px; }
-.rank-slot .slot-name { flex: 1; color: #374151; }
-.rank-slot .slot-pts { color: #6366f1; font-weight: 600; font-size: 13px; }
-.rank-slot.empty .slot-name { color: #d1d5db; font-style: italic; }
-.submit-btn { width: 100%; padding: 16px; border: none; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-size: 17px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(99,102,241,0.4); transition: all 0.2s; }
-.submit-btn:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
-.submit-btn:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
-.result-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.result-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #f3f4f6; }
-.result-item:last-child { border-bottom: none; }
-.result-rank { font-size: 20px; font-weight: 800; min-width: 36px; }
-.result-info { flex: 1; }
-.result-info .name { font-weight: 600; font-size: 15px; color: #1f2937; }
-.result-info .author { font-size: 13px; color: #9ca3af; }
-.result-score { font-weight: 700; color: #6366f1; font-size: 16px; }
-.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 10px; font-size: 14px; z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-.toast.show { opacity: 1; }
-.toast.error { background: #ef4444; }
-.toast.success { background: #10b981; }
-@media (max-width: 400px) { .works-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } .work-item { padding: 6px; } .work-item .title { font-size: 12px; } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>投票评选</title>
+  <style>
+    :root {
+      --page: #fff8ee;
+      --surface: #fffdf9;
+      --surface-soft: #fff0df;
+      --ink: #38271f;
+      --muted: #76645a;
+      --primary: #d96232;
+      --primary-dark: #b9472a;
+      --line: #efd8c2;
+      --disabled: #d9cfc5;
+      --shadow: 0 10px 28px rgba(87, 48, 29, .12);
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--page); -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100dvh;
+      background: var(--page);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+    .hero {
+      min-height: 198px;
+      padding: max(30px, env(safe-area-inset-top)) clamp(18px, 5vw, 34px) 30px;
+      background: var(--primary-dark) url("/assets/warm-vote-header.png") center / cover no-repeat;
+      color: #fffdf8;
+      border-radius: 0 0 28px 28px;
+    }
+    .hero-kicker { margin: 0 0 8px; font-size: 15px; font-weight: 650; letter-spacing: .12em; color: #fff0df; }
+    .hero h1 { margin: 0; max-width: 15em; font-size: clamp(38px, 10.5vw, 46px); line-height: 1.14; letter-spacing: -.02em; }
+    .hero p { margin: 15px 0 0; font-size: clamp(15px, 4vw, 18px); color: #fff7ef; }
+    .shell { width: min(100%, 720px); margin: 0 auto; padding: 18px clamp(14px, 4vw, 24px) 116px; }
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-top: -36px;
+      padding: 10px 6px;
+      border: 1px solid rgba(239,216,194,.85);
+      border-radius: 20px;
+      background: rgba(255,253,249,.97);
+      box-shadow: var(--shadow);
+    }
+    .summary-item { min-width: 0; padding: 2px 8px; }
+    .summary-item + .summary-item { border-left: 1px solid var(--line); }
+    .summary-main { display: block; font-size: 16px; font-weight: 750; color: var(--ink); white-space: nowrap; }
+    .summary-main strong { color: var(--primary-dark); font-size: 21px; }
+    .summary-sub { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+    .ranking-link {
+      grid-column: 1 / -1;
+      justify-self: stretch;
+      min-height: 44px;
+      margin: 13px 8px 0;
+      border: 0;
+      border-top: 1px solid var(--line);
+      background: transparent;
+      color: var(--primary-dark);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .section-title { margin: 27px 2px 14px; font-size: 20px; line-height: 1.3; }
+    .section-title::before { content: ""; display: inline-block; width: 5px; height: 24px; margin-right: 9px; border-radius: 4px; background: var(--primary); vertical-align: -5px; }
+    .work-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .work-card {
+      position: relative;
+      min-width: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(87,48,29,.05);
+    }
+    .work-card:focus-visible { outline: 3px solid rgba(217,98,50,.35); outline-offset: 2px; }
+    .work-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(217,98,50,.13); }
+    .work-card.disabled { opacity: .5; }
+    .media {
+      position: relative;
+      aspect-ratio: 1 / .86;
+      overflow: hidden;
+      background: #f2e6d9;
+    }
+    .media img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .media-empty { width: 100%; height: 100%; display: grid; place-items: center; padding: 12px; color: var(--muted); font-size: 13px; }
+    .selected-mark {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      min-width: 45px;
+      height: 30px;
+      display: none;
+      place-items: center;
+      padding: 0 10px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 750;
+      box-shadow: 0 2px 8px rgba(56,39,31,.22);
+    }
+    .work-card.selected .selected-mark { display: grid; }
+    .work-info { padding: 12px 12px 14px; }
+    .work-number { display: block; margin-bottom: 3px; color: var(--primary-dark); font-size: 12px; font-weight: 750; }
+    .work-title { display: block; overflow: hidden; font-size: 15px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
+    .vote-dock {
+      position: fixed;
+      z-index: 20;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 13px max(14px, env(safe-area-inset-right)) max(13px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      background: rgba(255,253,249,.97);
+      border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 24px rgba(87,48,29,.1);
+    }
+    .dock-inner { width: min(100%, 720px); margin: auto; display: grid; grid-template-columns: auto minmax(150px, 1fr); align-items: center; gap: 16px; }
+    .dock-count strong { display: block; font-size: 22px; color: var(--ink); }
+    .dock-count strong span { color: var(--primary-dark); }
+    .dock-count small { color: var(--muted); font-size: 12px; }
+    .submit {
+      min-height: 52px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 750;
+      letter-spacing: .04em;
+      cursor: pointer;
+    }
+    .submit:disabled { background: var(--disabled); color: #766f69; cursor: not-allowed; }
+    .state { margin: 22px 0; padding: 36px 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); text-align: center; color: var(--muted); }
+    .state h2 { margin: 0 0 8px; color: var(--ink); font-size: 21px; }
+    .ranking-head { display: flex; align-items: center; gap: 12px; margin: 4px 0 20px; }
+    .back-button { min-width: 70px; min-height: 44px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font-weight: 700; cursor: pointer; }
+    .ranking-head h2 { margin: 0; font-size: 21px; }
+    .ranking-note { margin: -10px 0 18px; color: var(--muted); font-size: 13px; }
+    .ranking-list { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+    .rank-row { display: grid; grid-template-columns: 42px 48px minmax(0,1fr) auto; align-items: center; gap: 11px; min-height: 68px; padding: 9px 13px; }
+    .rank-row + .rank-row { border-top: 1px solid var(--line); }
+    .rank-pos { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #f5e8db; color: var(--ink); font-weight: 800; }
+    .rank-row.top .rank-pos { background: var(--primary); color: #fff; }
+    .rank-thumb { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: #f2e6d9; }
+    .rank-name { min-width: 0; overflow: hidden; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
+    .rank-votes { color: var(--primary-dark); font-weight: 800; white-space: nowrap; }
+    @media (min-width: 360px) {
+      .summary { grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(104px,.9fr); align-items: center; }
+      .summary-main { font-size: 16px; }
+      .summary-sub { font-size: 12px; }
+      .ranking-link { grid-column: auto; min-width: 0; margin: 0 4px; border-top: 0; border-left: 1px solid var(--line); }
+    }
+    @media (min-width: 540px) {
+      .work-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 350px) {
+      .hero { min-height: 176px; padding-left: 16px; padding-right: 16px; }
+      .shell { padding-left: 10px; padding-right: 10px; }
+      .summary-item { padding-left: 9px; padding-right: 9px; }
+      .summary-main { font-size: 16px; }
+      .summary-main strong { font-size: 21px; }
+      .work-grid { gap: 9px; }
+      .work-info { padding: 10px; }
+      .dock-inner { gap: 10px; }
+      .submit { font-size: 15px; }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <h1>投票系统</h1>
-    <p>选出你最喜欢的 5 个作品，按排名计分</p>
-  </div>
+  <header class="hero">
+    <p class="hero-kicker">投票评选</p>
+    <h1 id="eventNameDisplay">活动加载中</h1>
+    <p id="heroInstruction">请选择你支持的参选项目</p>
+  </header>
 
-  <div class="event-selector" id="eventSelector">
-    <label>选择活动</label>
-    <select id="eventSelect" onchange="switchEvent()"></select>
-  </div>
+  <main class="shell" id="app">
+    <div class="state">正在加载活动...</div>
+  </main>
 
-  <div id="votingSection">
-    <div class="rankings-bar" id="rankingsBar">
-      <h3>你的排名</h3>
-      <div class="rank-slot empty"><span class="slot-num">1</span><span class="slot-name">点击作品选择第一名</span><span class="slot-pts">5 分</span></div>
-      <div class="rank-slot empty"><span class="slot-num">2</span><span class="slot-name">点击作品选择第二名</span><span class="slot-pts">4 分</span></div>
-      <div class="rank-slot empty"><span class="slot-num">3</span><span class="slot-name">点击作品选择第三名</span><span class="slot-pts">3 分</span></div>
-      <div class="rank-slot empty"><span class="slot-num">4</span><span class="slot-name">点击作品选择第四名</span><span class="slot-pts">2 分</span></div>
-      <div class="rank-slot empty"><span class="slot-num">5</span><span class="slot-name">点击作品选择第五名</span><span class="slot-pts">1 分</span></div>
-    </div>
+  <script>
+  (function () {
+    'use strict';
 
-    <div class="card">
-      <h3>作品列表</h3>
-      <div class="works-grid" id="worksGrid"></div>
-    </div>
+    var voteLimit = 1;
+    var currentEvent = null;
+    var works = [];
+    var selectedIds = [];
+    var voterToken = '';
 
-    <button class="submit-btn" id="submitBtn" disabled onclick="submitVote()">提交投票</button>
-  </div>
-
-  <div id="resultSection" style="display:none;">
-    <div class="header"><h1>投票成功</h1><p id="resultEventTitle"></p></div>
-    <div class="result-card">
-      <h3 style="margin-bottom:12px;font-size:16px;">当前排行榜</h3>
-      <div id="resultsList"></div>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-const POINTS = [5, 4, 3, 2, 1];
-let currentEventId = null;
-let works = [];
-let selected = [null, null, null, null, null]; // work ids, index 0 = 1st place
-let token = null;
-
-function getToken() {
-  let t = localStorage.getItem('vote_token');
-  if (!t) {
-    t = crypto.randomUUID();
-    localStorage.setItem('vote_token', t);
-  }
-  return t;
-}
-
-function toast(msg, type = '') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast ' + type + ' show';
-  setTimeout(() => el.className = 'toast', 2000);
-}
-
-async function loadEvents() {
-  const res = await fetch('/api/events');
-  const events = await res.json();
-  const sel = document.getElementById('eventSelect');
-  sel.innerHTML = events.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-  if (events.length > 0) {
-    currentEventId = events[0].id;
-    await initEvent();
-  }
-}
-
-async function switchEvent() {
-  currentEventId = parseInt(document.getElementById('eventSelect').value);
-  await initEvent();
-}
-
-async function initEvent() {
-  if (!currentEventId) return;
-  token = getToken();
-
-  // Check if already voted
-  const checkRes = await fetch(`/api/vote-check?token=${encodeURIComponent(token)}&event_id=${currentEventId}`);
-  const check = await checkRes.json();
-
-  if (check.hasVoted) {
-    document.getElementById('votingSection').style.display = 'none';
-    document.getElementById('resultSection').style.display = 'block';
-    const name = document.getElementById('eventSelect').selectedOptions[0]?.text || '';
-    document.getElementById('resultEventTitle').textContent = `活动: ${name}`;
-    await loadResults();
-    return;
-  }
-
-  document.getElementById('votingSection').style.display = 'block';
-  document.getElementById('resultSection').style.display = 'none';
-
-  // Load works
-  const res = await fetch(`/api/works?event_id=${currentEventId}`);
-  works = await res.json();
-  selected = [null, null, null, null, null];
-  renderWorks();
-  renderRankings();
-  updateSubmitBtn();
-}
-
-function renderWorks() {
-  document.getElementById('worksGrid').innerHTML = works.map(w => {
-    const idx = selected.indexOf(w.id);
-    const selClass = idx !== -1 ? ' selected' : '';
-    const badge = idx !== -1 ? `<div class="rank-badge" style="display:flex;">${idx + 1}</div>` : '';
-    const imgHtml = w.image_data
-      ? `<img src="${w.image_data}" alt="${w.title}">`
-      : `<div style="width:100%;aspect-ratio:1;background:#e5e7eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:28px;">🏆</div>`;
-    return `<div class="work-item${selClass}" onclick="toggleWork(${w.id})">${badge}${imgHtml}<div class="title">${w.title}</div><div class="author">${w.author || ''}</div></div>`;
-  }).join('');
-}
-
-function renderRankings() {
-  const slotDiv = document.getElementById('rankingsBar');
-  let html = '<h3>你的排名</h3>';
-  selected.forEach((wid, i) => {
-    const w = wid ? works.find(w => w.id === wid) : null;
-    const name = w ? w.title : `点击作品选择第${['一','二','三','四','五'][i]}名`;
-    html += `<div class="rank-slot${w ? '' : ' empty'}"><span class="slot-num">${i + 1}</span><span class="slot-name">${name}</span><span class="slot-pts">${POINTS[i]} 分</span></div>`;
-  });
-  slotDiv.innerHTML = html;
-}
-
-function toggleWork(wid) {
-  const idx = selected.indexOf(wid);
-  if (idx !== -1) {
-    // Already selected - remove it and shift up
-    selected.splice(idx, 1);
-    selected.push(null);
-  } else {
-    // Not selected - find first empty slot
-    const emptyIdx = selected.indexOf(null);
-    if (emptyIdx === -1) {
-      // All full - remove last and prepend
-      selected.pop();
-      selected.unshift(wid);
-    } else {
-      selected[emptyIdx] = wid;
+    try {
+      voterToken = localStorage.getItem('voter_token') || '';
+      if (!voterToken) {
+        voterToken = (typeof crypto !== 'undefined' && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'v' + Date.now() + Math.random().toString(36).slice(2);
+        localStorage.setItem('voter_token', voterToken);
+      }
+    } catch (error) {
+      voterToken = 'v' + Date.now() + Math.random().toString(36).slice(2);
     }
-  }
-  renderWorks();
-  renderRankings();
-  updateSubmitBtn();
-}
 
-function updateSubmitBtn() {
-  const allFilled = selected.every(s => s !== null);
-  document.getElementById('submitBtn').disabled = !allFilled;
-}
+    function byId(id) { return document.getElementById(id); }
+    function eventIdFromUrl() { return parseInt(new URLSearchParams(location.search).get('event_id'), 10); }
+    function canShowResults() { return !!(currentEvent && (currentEvent.is_ended || currentEvent.show_results_after_vote)); }
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
 
-async function submitVote() {
-  const result = await fetch('/api/vote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      event_id: currentEventId,
-      work_ids: selected,
-      voter_token: token
-    })
-  });
-  const data = await result.json();
-  if (result.ok) {
-    toast(data.message, 'success');
-    document.getElementById('votingSection').style.display = 'none';
-    document.getElementById('resultSection').style.display = 'block';
-    const name = document.getElementById('eventSelect').selectedOptions[0]?.text || '';
-    document.getElementById('resultEventTitle').textContent = `活动: ${name}`;
-    await loadResults();
-  } else {
-    toast(data.error, 'error');
-  }
-}
+    async function init() {
+      try {
+        var eventsResponse = await fetch('/api/events');
+        var events = await eventsResponse.json();
+        var requestedId = eventIdFromUrl();
+        currentEvent = Number.isInteger(requestedId)
+          ? events.find(function (event) { return event.id === requestedId; })
+          : events[0];
 
-async function loadResults() {
-  const res = await fetch(`/api/results?event_id=${currentEventId}`);
-  const data = await res.json();
-  const emojis = ['🥇','🥈','🥉','4','5','6','7','8','9','10'];
-  document.getElementById('resultsList').innerHTML = data.results.slice(0, 10).map((r, i) => `
-    <div class="result-item">
-      <span class="result-rank">${emojis[i] || (i + 1)}</span>
-      <div class="result-info"><div class="name">${r.title}</div><div class="author">${r.author || ''}</div></div>
-      <span class="result-score">${r.score} 分</span>
-    </div>
-  `).join('');
-}
+        if (!currentEvent) {
+          byId('eventNameDisplay').textContent = '活动不存在';
+          byId('app').innerHTML = '<div class="state"><h2>找不到这个活动</h2><p>活动可能已被删除，请向主办方确认入口链接。</p></div>';
+          return;
+        }
 
-loadEvents();
-</script>
+        voteLimit = parseInt(currentEvent.rank_limit, 10) || 1;
+        byId('eventNameDisplay').textContent = currentEvent.name;
+        byId('heroInstruction').textContent = '请选择' + voteLimit + '个你支持的项目';
+
+        if (currentEvent.is_ended) {
+          await renderRankings('活动已结束');
+          return;
+        }
+
+        var responses = await Promise.all([
+          fetch('/api/works?event_id=' + currentEvent.id),
+          fetch('/api/vote-check?token=' + encodeURIComponent(voterToken) + '&event_id=' + currentEvent.id)
+        ]);
+        works = await responses[0].json();
+        var voteState = await responses[1].json();
+
+        if (voteState.hasVoted) {
+          renderCompleted();
+          return;
+        }
+        if (works.length < voteLimit) {
+          byId('app').innerHTML = '<div class="state"><h2>暂未开始投票</h2><p>当前参选项目不足 ' + voteLimit + ' 个。</p></div>';
+          return;
+        }
+        renderVoting();
+      } catch (error) {
+        byId('app').innerHTML = '<div class="state"><h2>加载失败</h2><p>请检查网络后刷新重试。</p></div>';
+      }
+    }
+
+    function renderSummary() {
+      return '<section class="summary" aria-label="投票信息">'
+        + '<div class="summary-item"><span class="summary-main">已选 <strong id="summaryCount">' + selectedIds.length + '/' + voteLimit + '</strong></span><span class="summary-sub">共 ' + works.length + ' 个参选项目</span></div>'
+        + '<div class="summary-item"><span class="summary-main">等权投票</span><span class="summary-sub">每个选择计 1 票</span></div>'
+        + (canShowResults() ? '<button type="button" class="ranking-link" id="rankingLink">查看完整排名</button>' : '')
+        + '</section>';
+    }
+
+    function renderVoting() {
+      var cards = works.map(function (work, index) {
+        var imageSrc = work.image_url || work.image_data;
+        var image = imageSrc
+          ? '<img src="' + escapeHtml(imageSrc) + '" alt="" loading="lazy">'
+          : '<span class="media-empty">暂无封面</span>';
+        return '<button type="button" class="work-card" data-work-id="' + work.id + '" aria-pressed="false">'
+          + '<span class="media">' + image + '<span class="selected-mark">已选</span></span>'
+          + '<span class="work-info"><span class="work-number">参选 ' + (index + 1) + '</span><span class="work-title">' + escapeHtml(work.title) + '</span></span>'
+          + '</button>';
+      }).join('');
+
+      byId('app').innerHTML = renderSummary()
+        + '<h2 class="section-title">请选择' + voteLimit + '个项目</h2>'
+        + '<section class="work-grid" aria-label="参选项目">' + cards + '</section>'
+        + '<div class="vote-dock"><div class="dock-inner">'
+        + '<div class="dock-count"><strong>已选 <span id="dockCount">' + selectedIds.length + '/' + voteLimit + '</span></strong><small>请选择' + voteLimit + '个项目</small></div>'
+        + '<button type="button" class="submit" id="submitVote" disabled>确认投票</button>'
+        + '</div></div>';
+
+      var cardElements = document.querySelectorAll('[data-work-id]');
+      cardElements.forEach(function (card) {
+        card.addEventListener('click', function () { toggleWork(parseInt(card.dataset.workId, 10)); });
+      });
+      if (byId('rankingLink')) byId('rankingLink').addEventListener('click', function () { renderRankings(); });
+      byId('submitVote').addEventListener('click', submitVote);
+      refreshSelection();
+    }
+
+    function toggleWork(id) {
+      var index = selectedIds.indexOf(id);
+      if (index >= 0) {
+        selectedIds.splice(index, 1);
+      } else if (selectedIds.length < voteLimit) {
+        selectedIds.push(id);
+      }
+      refreshSelection();
+    }
+
+    function refreshSelection() {
+      document.querySelectorAll('[data-work-id]').forEach(function (card) {
+        var selected = selectedIds.indexOf(parseInt(card.dataset.workId, 10)) >= 0;
+        card.classList.toggle('selected', selected);
+        card.classList.toggle('disabled', !selected && selectedIds.length >= voteLimit);
+        card.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      });
+      if (byId('summaryCount')) byId('summaryCount').textContent = selectedIds.length + '/' + voteLimit;
+      if (byId('dockCount')) byId('dockCount').textContent = selectedIds.length + '/' + voteLimit;
+      if (byId('submitVote')) byId('submitVote').disabled = selectedIds.length !== voteLimit;
+    }
+
+    async function submitVote() {
+      if (selectedIds.length !== voteLimit) return;
+      var submitButton = byId('submitVote');
+      submitButton.disabled = true;
+      submitButton.textContent = '提交中...';
+      try {
+        var response = await fetch('/api/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_id: currentEvent.id, voter_token: voterToken, work_ids: selectedIds })
+        });
+        var data = await response.json();
+        if (!response.ok) throw new Error(data.error || '投票失败');
+        renderCompleted();
+      } catch (error) {
+        alert(error.message || '投票失败，请重试');
+        submitButton.disabled = false;
+        submitButton.textContent = '确认投票';
+      }
+    }
+
+    function renderCompleted() {
+      var resultButton = canShowResults() ? '<button type="button" class="back-button" id="showRankingAfterVote">查看完整排名</button>' : '';
+      var note = canShowResults() ? '感谢参与，每个选择均计 1 票。' : '感谢参与，主办方暂未公开实时排名。';
+      byId('app').innerHTML = '<div class="state"><h2>投票已提交</h2><p>' + note + '</p>' + resultButton + '</div>';
+      if (byId('showRankingAfterVote')) byId('showRankingAfterVote').addEventListener('click', function () { renderRankings(); });
+    }
+
+    async function renderRankings(statusText) {
+      try {
+        if (!canShowResults()) throw new Error('活动暂未公开投票结果');
+        var response = await fetch('/api/results?public=1&event_id=' + currentEvent.id);
+        var data = await response.json();
+        if (!response.ok) throw new Error(data.error || '排名加载失败');
+        works = data.results || [];
+        var rows = works.map(function (work, index) {
+          var imageSrc = work.image_url || work.image_data;
+          var thumb = imageSrc
+            ? '<img class="rank-thumb" src="' + escapeHtml(imageSrc) + '" alt="" loading="lazy">'
+            : '<span class="rank-thumb"></span>';
+          return '<div class="rank-row ' + (index < 3 ? 'top' : '') + '">'
+            + '<span class="rank-pos">' + (index + 1) + '</span>'
+            + thumb
+            + '<span class="rank-name">' + escapeHtml(work.title) + '</span>'
+            + '<span class="rank-votes">' + work.score + ' 票</span>'
+            + '</div>';
+        }).join('');
+        byId('app').innerHTML = '<div class="ranking-head"><button type="button" class="back-button" id="backToVote">返回</button><h2>完整排名</h2></div>'
+          + '<p class="ranking-note">' + escapeHtml(statusText || '前三名重点标识，其余名次继续完整展示') + '</p>'
+          + '<section class="ranking-list">' + (rows || '<div class="state">暂无排名数据</div>') + '</section>';
+        byId('backToVote').addEventListener('click', function () {
+          if (statusText || currentEvent.is_ended) renderCompleted(); else renderVoting();
+        });
+      } catch (error) {
+        byId('app').innerHTML = '<div class="state"><h2>排名加载失败</h2><p>请稍后重试。</p></div>';
+      }
+    }
+
+    init();
+  })();
+  </script>
 </body>
 </html>
+
+
+
+
+

@@ -1,0 +1,254 @@
+.page {
+  padding: 0;
+  padding-bottom: 200rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 活动选择器 */
+.event-selector {
+  background: linear-gradient(135deg, #c62828, #e53935);
+  padding: 24rpx 32rpx;
+  padding-top: 16rpx;
+}
+
+.event-picker-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.event-label {
+  color: rgba(255,255,255,0.75);
+  font-size: 26rpx;
+}
+
+.event-name {
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.event-arrow {
+  color: rgba(255,255,255,0.6);
+  font-size: 28rpx;
+  margin-left: 4rpx;
+}
+
+/* 已投票 */
+.voted-banner {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  color: #fff;
+  padding: 24rpx 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.voted-icon {
+  font-size: 36rpx;
+}
+
+/* 加载 & 空状态 */
+.loading {
+  text-align: center;
+  padding: 120rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.empty {
+  text-align: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 作品网格 */
+.works-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  padding: 24rpx;
+}
+
+.work-card {
+  width: calc(50% - 8rpx);
+  background: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.06);
+  position: relative;
+  transition: all 0.2s;
+}
+
+.work-card.selected {
+  box-shadow: 0 0 0 6rpx #c62828, 0 6rpx 24rpx rgba(198, 40, 40, 0.3);
+  transform: scale(0.97);
+}
+
+.work-img-wrap {
+  position: relative;
+}
+
+.work-img {
+  width: 100%;
+  height: 280rpx;
+  background: #f0f0f0;
+}
+
+.work-img-placeholder {
+  width: 100%;
+  height: 280rpx;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64rpx;
+}
+
+.work-info {
+  padding: 20rpx;
+}
+
+.work-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.work-author {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+  display: block;
+}
+
+/* 排名徽章 */
+.rank-badge {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  background: #c62828;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 700;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2);
+}
+
+/* 排名预览 */
+.ranking-preview {
+  margin: 0 24rpx 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.06);
+}
+
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.ranking-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #c62828;
+}
+
+.ranking-clear {
+  font-size: 24rpx;
+  color: #999;
+  padding: 4rpx 16rpx;
+  background: #f0f0f0;
+  border-radius: 20rpx;
+}
+
+.ranking-list {}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-num {
+  font-size: 26rpx;
+  font-weight: 700;
+  min-width: 60rpx;
+}
+
+.ranking-name {
+  font-size: 26rpx;
+  color: #333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 提交按钮 */
+.submit-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 24rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -2rpx 20rpx rgba(0,0,0,0.08);
+}
+
+.submit-btn {
+  width: 100%;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  background: #ccc;
+  color: #999;
+  border: none;
+}
+
+.submit-btn.active {
+  background: linear-gradient(135deg, #c62828, #e53935);
+  color: #fff;
+}
+
+.submit-btn.active:active {
+  opacity: 0.85;
+}

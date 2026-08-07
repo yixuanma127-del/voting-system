@@ -1,7 +1,7 @@
 App({
   globalData: {
     // 后端 API 地址（部署后替换为你的 HTTPS 域名）
-    apiBase: 'https://voting-system-ljyn.onrender.com',
+    apiBase: 'https://voting.ewisest.com',
     voterToken: ''
   },
 
